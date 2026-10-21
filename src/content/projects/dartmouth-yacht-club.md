@@ -7,7 +7,7 @@ link: https://dartmouthyachtclub.ca
 linkLabel: dartmouthyachtclub.ca
 ---
 
-I volunteer on the management committee at Dartmouth Yacht Club and look after web and communications. In 2024 we replatformed the club’s website to get more kids into junior sailing and grow the membership.
+I’m on the management committee at Dartmouth Yacht Club for a little while longer, looking after web and communications. In 2024 we replatformed the club’s website to get more kids into junior sailing and grow the membership.
 
 <figure class="shot">
   <img src="/dyc-site.jpg" alt="The Dartmouth Yacht Club homepage, with an aerial photo of the marina" width="1600" height="880" loading="lazy" decoding="async" />
