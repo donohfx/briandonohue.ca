@@ -1,8 +1,8 @@
 # briandonohue.ca
 
-Personal site. Astro, static output, no UI framework.
+Personal site. Astro, static output
 
-## Run it
+## Run
 
 Needs Node 22.23+ (Node 24 recommended).
 
@@ -13,14 +13,14 @@ npm run build    # static site in dist/, drafts excluded
 npm run preview  # serve the build
 ```
 
-## Where things live
+## Where things are
 
 - `src/site.ts`: name, links, email, and the "Now" list on the homepage.
 - `src/content/projects/*.md`: projects. Frontmatter: `title`, `summary`, `year`, `order`, optional `link`/`linkLabel`, `draft`.
 - `src/pages/about.astro`: the About page.
 - `src/styles/global.css`: colours, type, and shared styles. Colour tokens are at the top.
 
-Anything with `draft: true` shows in dev with a badge and is left out of the build.
+Anything with `draft: true` shows in dev with a badge but isn't built
 
 ## Deploy
 
