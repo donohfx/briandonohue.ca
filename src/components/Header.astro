@@ -7,7 +7,9 @@ const isActive = (href: string) => path.startsWith(href);
 ---
 
 <header class="wrap">
-  <a href="/" class="home" aria-label={`${site.name}, home`}>{site.name}</a>
+  <a href="/" class="home" aria-label={`${site.name}, home`}>
+    <span aria-hidden="true"><span class="initial">B</span>rian <span class="initial">D</span>onohue</span>
+  </a>
   <nav aria-label="Main">
     {
       nav.map((item) => (
@@ -33,9 +35,17 @@ const isActive = (href: string) => path.startsWith(href);
   a {
     text-decoration: none;
   }
+  /* Engraved initials: serif capitals with a taller B and D */
   .home {
-    font-weight: 550;
-    letter-spacing: -0.005em;
+    font-family: var(--serif);
+    font-weight: 600;
+    font-size: 0.875rem;
+    letter-spacing: 0.1em;
+    text-transform: uppercase;
+    line-height: 1;
+  }
+  .initial {
+    font-size: 1.36em;
   }
   nav {
     display: flex;
