@@ -9,6 +9,10 @@ Things to add to the site when there's time. Rough priority order.
 - [ ] Talks: add Shoptalk 2024 (Customer Innovation panel) and the Everlane interview. Embed the Shopify/Wistia video rather than re-hosting it.
 - [ ] web-video: add the GitHub link once the repo is public.
 
+## Keep fresh
+- [ ] Update the Now list and `nowUpdated` in `src/site.ts` every few months (next: early 2027).
+- [ ] When off the DYC committee, change the About and yacht club project lines to past tense.
+
 ## Writing
 - [ ] Bring back a Writing section once there's a first post.
 - [ ] Post idea: moving from support to product.

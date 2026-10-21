@@ -117,7 +117,7 @@ const path = [
   <section class="kind">
     <h2 class="label">Kind words</h2>
     <div class="quotes">
-      {kindWords.map((k) => <Quote {...k} small />)}
+      {kindWords.filter((k) => !k.featured).map((k) => <Quote {...k} small />)}
     </div>
     <p class="more">
       From <a href="https://www.linkedin.com/in/brian-donohue-a61357114/details/recommendations/"

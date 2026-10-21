@@ -126,6 +126,23 @@ a:focus-visible {
   border-radius: 2px;
 }
 
+/* Skip link: hidden until keyboard focus */
+.skip {
+  position: absolute;
+  left: 1rem;
+  top: -3rem;
+  z-index: 10;
+  padding: 0.5rem 0.9rem;
+  background: var(--ink);
+  color: var(--bg);
+  border-radius: 4px;
+  text-decoration: none;
+  font-size: 0.9rem;
+}
+.skip:focus {
+  top: 1rem;
+}
+
 /* Section label: small, quiet, sans */
 .label {
   font-family: var(--label-font);
@@ -335,6 +352,14 @@ section + section {
   0%, 35% { opacity: 1; }
   50%, 85% { opacity: 0; }
   100% { opacity: 1; }
+}
+.then-now:hover .then,
+.then-now:focus .then {
+  animation-play-state: paused;
+}
+.then-now:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
 }
 @media (prefers-reduced-motion: reduce) {
   .then-now .then { animation: none; }
