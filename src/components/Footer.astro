@@ -1,0 +1,66 @@
+---
+import { site } from '../site';
+const year = new Date().getFullYear();
+---
+
+<footer class="wrap">
+  <div class="row">
+    <span>© {year} {site.name}</span>
+    <span class="coords" title={site.location}>{site.coords}</span>
+  </div>
+  <div class="toast" role="status" aria-live="polite" hidden>Fair winds.</div>
+</footer>
+
+<script>
+  // A small nod to the old site. ↑↑↓↓←→←→BA
+  const code = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+  let i = 0;
+  window.addEventListener('keydown', (e) => {
+    i = e.key === code[i] ? i + 1 : e.key === code[0] ? 1 : 0;
+    if (i < code.length) return;
+    i = 0;
+    const toast = document.querySelector<HTMLElement>('.toast');
+    if (!toast) return;
+    toast.hidden = false;
+    document.documentElement.classList.add('flag');
+    setTimeout(() => {
+      toast.hidden = true;
+      document.documentElement.classList.remove('flag');
+    }, 2600);
+  });
+</script>
+
+<style>
+  footer {
+    padding-bottom: 2rem;
+    font-size: 0.8rem;
+    color: var(--faint);
+  }
+  .row {
+    display: flex;
+    justify-content: space-between;
+    gap: 1rem;
+    border-top: 1px solid var(--rule);
+    padding-top: 1.25rem;
+  }
+  .coords {
+    font-family: var(--meta-font);
+    font-variant-numeric: tabular-nums;
+  }
+  .toast {
+    position: fixed;
+    left: 50%;
+    bottom: 1.5rem;
+    transform: translateX(-50%);
+    background: var(--ink);
+    color: var(--bg);
+    font-family: var(--serif);
+    font-style: italic;
+    font-size: 1rem;
+    padding: 0.5rem 1rem;
+    border-radius: 999px;
+  }
+  :global(html.flag) :global(.coords) {
+    color: var(--accent);
+  }
+</style>

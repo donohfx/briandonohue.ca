@@ -1,0 +1,58 @@
+---
+import { render } from 'astro:content';
+import Base from '../../layouts/Base.astro';
+import { getProjects } from '../../lib/content';
+
+export async function getStaticPaths() {
+  const projects = await getProjects();
+  return projects.map((p) => ({ params: { id: p.id }, props: { project: p } }));
+}
+
+const { project } = Astro.props;
+const { Content } = await render(project);
+---
+
+<Base title={project.data.title} description={project.data.summary}>
+  <article>
+    <p class="back"><a href="/projects/">Projects</a></p>
+    <h1>
+      {project.data.title}
+      {project.data.draft && <span class="draft-badge">Draft</span>}
+    </h1>
+    <p class="meta">
+      {project.data.year}
+      {
+        project.data.link && (
+          <>
+            {' · '}
+            <a href={project.data.link}>{project.data.linkLabel ?? 'Link'}</a>
+          </>
+        )
+      }
+    </p>
+    <p class="lede">{project.data.summary}</p>
+    <div class="prose"><Content /></div>
+  </article>
+</Base>
+
+<style>
+  .back {
+    font-size: 0.85rem;
+    margin-bottom: 1.5rem;
+  }
+  .back a {
+    color: var(--muted);
+    text-decoration: none;
+  }
+  .back a::before {
+    content: '← ';
+  }
+  .meta {
+    color: var(--faint);
+    font-size: 0.9rem;
+    margin: 0.75rem 0 2.25rem;
+  }
+  .meta a {
+    color: var(--muted);
+  }
+</style>

@@ -1,0 +1,224 @@
+---
+import Base from '../layouts/Base.astro';
+import Quote from '../components/Quote.astro';
+import { kindWords } from '../site';
+
+const path = [
+  {
+    org: 'Ordergroove',
+    when: '2026 to now',
+    role: 'Principal Product Manager',
+    note: 'Subscriptions and memberships for enterprise brands. I’m working on the future of payments in relationship commerce and where AI agents fit in.',
+  },
+  {
+    org: 'Paramount Commerce',
+    when: '2026',
+    role: 'Staff Product Manager',
+    note: 'Built a merchant hierarchy for a legacy payments platform. Not my favourite stretch.',
+  },
+  {
+    org: 'Shopify',
+    when: '2014 to 2025',
+    role: '',
+    note: 'Eleven years, from merchant support to product leadership.',
+  },
+  {
+    org: '',
+    when: '2024 to 2025',
+    role: 'Product Lead, Shop and Shop Pay',
+    note: 'Payments, identity, merchant APIs, and agentic commerce for tens of millions of buyers.',
+  },
+  {
+    org: '',
+    when: '2022 to 2024',
+    role: 'Senior Product Manager, Shop Pay',
+    note: 'Took Shop Pay to merchants off Shopify for the first time, launching with Everlane. Later moved to Shop Pay Installments and on-platform growth.',
+  },
+  {
+    org: '',
+    when: '2017 to 2022',
+    role: 'Product Manager, Tax',
+    note: 'Owned the tax platform (in-house calculation engine, reporting, Avalara partnership).',
+  },
+  {
+    org: '',
+    when: '2014 to 2017',
+    role: 'Support, launch, and solutions engineering',
+    note: 'Started as a support Guru, then onboarded and scoped Shopify Plus merchants. Top solutions engineer of 2016.',
+  },
+];
+---
+
+<Base
+  title="About"
+  description="About Brian Donohue: customer problems, teams, payments and tax, and what he does when he’s not working.">
+  <h1>About</h1>
+
+  <div class="prose">
+    <p class="lede">
+      I like hard problems with a customer on the other end. I started my career answering support
+      calls, and I still start every problem by asking who’s stuck and why.
+    </p>
+
+    <p>
+      Most of those problems have been in commerce, so I know payments, wallets, and tax deeply.
+      That helps. What I’m best at is the work around it: figuring out what customers need and
+      getting engineering, design, data, and partners working on the same problem. Then I turn the
+      mess into a simple system people can build on.
+    </p>
+
+    <h2>How I work</h2>
+    <ul>
+      <li>
+        If I can’t explain who something helps and what it fixes for them, it isn’t ready to
+        build.
+      </li>
+      <li>
+        Most of my effort goes into getting people to agree on the problem. The solution usually
+        moves faster after that.
+      </li>
+      <li>
+        I build clear models of messy systems so teams can make a decision once and stop
+        relitigating it every week.
+      </li>
+      <li>I’d rather say the awkward thing early than watch it come up in a retro.</li>
+      <li>I joke around a fair bit, and I still do what I said I’d do.</li>
+    </ul>
+  </div>
+
+  <section class="path">
+    <h2 class="label">Path</h2>
+    <ol>
+      {
+        path.map((p) => (
+          <li class={p.org ? 'org' : 'sub'}>
+            <div class="head">
+              <span class="role">
+                {p.org && <strong>{p.org}</strong>}
+                {p.org && p.role && <span class="sep"> · </span>}
+                {p.role}
+              </span>
+              <span class="when">{p.when}</span>
+            </div>
+            <p class="note">{p.note}</p>
+          </li>
+        ))
+      }
+    </ol>
+    <p class="more">
+      I moved from support into product, and I’m always happy to talk with people trying to make
+      that jump.
+    </p>
+    <p class="more">
+      <a href="https://www.linkedin.com/in/brian-donohue-a61357114/">LinkedIn</a>
+    </p>
+  </section>
+
+  <section class="kind">
+    <h2 class="label">Kind words</h2>
+    <div class="quotes">
+      {kindWords.map((k) => <Quote {...k} small />)}
+    </div>
+    <p class="more">
+      From <a href="https://www.linkedin.com/in/brian-donohue-a61357114/details/recommendations/"
+        >recommendations on LinkedIn</a
+      >.
+    </p>
+  </section>
+
+  <div class="prose">
+    <h2>Off the clock</h2>
+    <p>
+      I race and maintain <a href="/projects/hardtack/">Hardtack</a>, a 1976 fibreglass boat that’s
+      about half race boat and half repair list. I teach crew in more detail than they probably
+      want, because people sail better when they know why. I crew on other boats whenever I can,
+      mostly to steal ideas about sail trim.
+    </p>
+    <p>
+      I volunteer on the management committee at <a href="https://dartmouthyachtclub.ca"
+        >Dartmouth Yacht Club</a
+      > and look after web and communications. A Yachtmaster certification is on the list
+      somewhere after the rigging and the engine.
+    </p>
+    <p>
+      Otherwise: guitar, and amps that occasionally smoke. Cars, mostly Volkswagens. The current
+      one is a 2024 Golf R after a long line of others, and I’ve learned German engineering means
+      the check engine light comes on with great precision. Smart home projects that work
+      fine until I improve them. And two cats: Ziggy, a calico with a talent for disapproval,
+      and Ivee, an Abyssinian who treats the house as a test environment.
+    </p>
+  </div>
+</Base>
+
+<style>
+  h1 {
+    margin-bottom: 2rem;
+  }
+  .path {
+    margin: 3rem 0 1rem;
+  }
+  .path ol {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    border-top: 1px solid var(--rule);
+  }
+  .path li {
+    padding: 0.85rem 0;
+    border-bottom: 1px solid var(--rule);
+  }
+  .path li.sub {
+    position: relative;
+    padding-left: 1.5rem;
+  }
+  .path li.sub::before {
+    content: '';
+    position: absolute;
+    left: 0.35rem;
+    top: 1.6rem;
+    width: 0.6rem;
+    height: 1px;
+    background: var(--faint);
+  }
+  .head {
+    display: flex;
+    justify-content: space-between;
+    align-items: baseline;
+    gap: 0.25rem 1rem;
+    flex-wrap: wrap;
+  }
+  .role {
+    font-family: var(--serif);
+    font-size: 1.1rem;
+  }
+  .role strong {
+    font-weight: 600;
+  }
+  .sep {
+    color: var(--faint);
+  }
+  .when {
+    font-family: var(--meta-font);
+    font-size: 0.8rem;
+    color: var(--faint);
+    white-space: nowrap;
+  }
+  .note {
+    margin: 0.2rem 0 0;
+    color: var(--muted);
+    font-size: 0.925rem;
+    line-height: 1.5;
+  }
+  .kind {
+    margin: 3rem 0 1rem;
+  }
+  .quotes {
+    display: grid;
+    gap: 1.75rem;
+  }
+  .more {
+    font-size: 0.9rem;
+    color: var(--muted);
+    margin-top: 1rem;
+  }
+</style>

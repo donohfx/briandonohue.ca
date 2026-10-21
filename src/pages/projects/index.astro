@@ -1,0 +1,22 @@
+---
+import Base from '../../layouts/Base.astro';
+import ProjectList from '../../components/ProjectList.astro';
+import { getProjects } from '../../lib/content';
+
+const projects = await getProjects();
+---
+
+<Base title="Projects" description="Things Brian Donohue has built, is building, or keeps fixing.">
+  <h1>Projects</h1>
+  <p class="muted intro">Things I’ve built and things I keep fixing.</p>
+  <ProjectList projects={projects} />
+</Base>
+
+<style>
+  h1 {
+    margin-bottom: 0.5rem;
+  }
+  .intro {
+    margin-bottom: 2.5rem;
+  }
+</style>

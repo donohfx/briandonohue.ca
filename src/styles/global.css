@@ -1,0 +1,342 @@
+@import '@fontsource-variable/source-serif-4/opsz.css';
+@import '@fontsource-variable/source-serif-4/opsz-italic.css';
+@import '@fontsource-variable/ibm-plex-sans';
+@import '@fontsource/ibm-plex-mono/400.css';
+@import '@fontsource/ibm-plex-mono/500.css';
+
+/* Day: Chart Room. Chart paper, navy ink, chart magenta. */
+:root {
+  --bg: #e6ece8;
+  --ink: #102335;
+  --muted: #4d5d68;
+  --faint: #5e6b73;
+  --rule: #c9d3cf;
+  --accent: #a8155f;
+  --select: #f0c9dc;
+
+  --serif: 'Source Serif 4 Variable', Georgia, serif;
+  --sans: 'IBM Plex Sans Variable', system-ui, -apple-system, sans-serif;
+  --mono: 'IBM Plex Mono', ui-monospace, 'SF Mono', Menlo, monospace;
+  --display: var(--serif);
+  --label-font: var(--mono);
+  --meta-font: var(--mono);
+  --label-case: none;
+  --label-spacing: 0;
+
+  --measure: 36rem;
+  --gutter: clamp(1rem, 5vw, 2rem);
+
+  color-scheme: light;
+}
+
+/* Night: Night Watch. Deep navy, warm ink, brass. */
+@media (prefers-color-scheme: dark) {
+  :root:not([data-theme='light']) {
+    --bg: #0e1924;
+    --ink: #e9e4d8;
+    --muted: #9ba6ad;
+    --faint: #7d8a93;
+    --rule: #223241;
+    --accent: #d0a956;
+    --select: #3a3220;
+    color-scheme: dark;
+  }
+}
+:root[data-theme='dark'] {
+  --bg: #0e1924;
+  --ink: #e9e4d8;
+  --muted: #9ba6ad;
+  --faint: #7d8a93;
+  --rule: #223241;
+  --accent: #d0a956;
+  --select: #3a3220;
+  color-scheme: dark;
+}
+
+*,
+*::before,
+*::after {
+  box-sizing: border-box;
+}
+
+html {
+  -webkit-text-size-adjust: 100%;
+  text-rendering: optimizeLegibility;
+  -webkit-font-smoothing: antialiased;
+}
+
+body {
+  margin: 0;
+  background: var(--bg);
+  transition: background-color 0.2s ease, color 0.2s ease;
+  color: var(--ink);
+  font-family: var(--sans);
+  font-size: 1rem;
+  line-height: 1.65;
+}
+
+::selection {
+  background: var(--select);
+}
+
+.wrap {
+  width: 100%;
+  max-width: calc(var(--measure) + var(--gutter) * 2);
+  margin: 0 auto;
+  padding: 0 var(--gutter);
+}
+
+h1,
+h2,
+h3 {
+  font-family: var(--serif);
+  font-weight: 450;
+  line-height: 1.2;
+  letter-spacing: -0.01em;
+  margin: 0;
+}
+
+h1 {
+  font-family: var(--display);
+  font-size: clamp(2rem, 6vw, 2.6rem);
+  font-weight: 400;
+  letter-spacing: -0.02em;
+}
+
+p {
+  margin: 0 0 1.1em;
+}
+
+a {
+  color: inherit;
+  text-decoration: underline;
+  text-decoration-color: color-mix(in srgb, var(--ink) 28%, transparent);
+  text-decoration-thickness: 1px;
+  text-underline-offset: 0.2em;
+  transition: text-decoration-color 0.15s ease, color 0.15s ease;
+}
+
+a:hover {
+  text-decoration-color: var(--accent);
+}
+
+a:focus-visible {
+  outline: 2px solid var(--accent);
+  outline-offset: 3px;
+  border-radius: 2px;
+}
+
+/* Section label: small, quiet, sans */
+.label {
+  font-family: var(--label-font);
+  font-size: 0.75rem;
+  font-weight: 500;
+  letter-spacing: var(--label-spacing);
+  text-transform: var(--label-case);
+  color: var(--muted);
+  margin: 0 0 1rem;
+}
+
+.muted {
+  color: var(--muted);
+}
+
+section + section {
+  margin-top: 3.5rem;
+}
+
+/* Index lists: title left, meta right */
+.index {
+  list-style: none;
+  margin: 0;
+  padding: 0;
+  border-top: 1px solid var(--rule);
+}
+
+.index li {
+  border-bottom: 1px solid var(--rule);
+}
+
+.index a {
+  display: grid;
+  grid-template-columns: 1fr auto;
+  gap: 0.25rem 1.5rem;
+  padding: 0.85rem 0;
+  text-decoration: none;
+}
+
+.index .title {
+  font-family: var(--serif);
+  font-size: 1.15rem;
+  line-height: 1.35;
+}
+
+.index .meta {
+  font-family: var(--meta-font);
+  color: var(--faint);
+  font-size: 0.85rem;
+  font-variant-numeric: tabular-nums;
+  white-space: nowrap;
+  padding-top: 0.2rem;
+}
+
+.index .desc {
+  grid-column: 1 / -1;
+  color: var(--muted);
+  font-size: 0.925rem;
+  line-height: 1.5;
+}
+
+.index a:hover .title {
+  color: var(--accent);
+}
+
+.draft-badge {
+  font-family: var(--sans);
+  font-size: 0.65rem;
+  font-weight: 600;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color: var(--accent);
+  border: 1px solid currentColor;
+  border-radius: 3px;
+  padding: 0.05rem 0.3rem;
+  margin-left: 0.5rem;
+  vertical-align: 0.2em;
+}
+
+/* Long-form text (posts, project write-ups, about) */
+.prose {
+  font-family: var(--sans);
+  font-size: 1.0625rem;
+  line-height: 1.7;
+}
+
+/* Opening line of a page: serif, between the title and body in size. */
+.lede {
+  font-family: var(--serif);
+  font-size: clamp(1.3rem, 3.6vw, 1.5rem);
+  line-height: 1.4;
+  letter-spacing: -0.01em;
+  text-wrap: pretty;
+  margin-bottom: 1.5rem;
+}
+
+.prose h2 {
+  font-size: 1.45rem;
+  margin: 2.4rem 0 0.8rem;
+}
+
+.prose h3 {
+  font-size: 1.2rem;
+  font-weight: 600;
+  margin: 2rem 0 0.6rem;
+}
+
+.prose ul,
+.prose ol {
+  padding-left: 1.2em;
+  margin: 0 0 1.1em;
+}
+
+.prose li + li {
+  margin-top: 0.35em;
+}
+
+.prose li::marker {
+  color: var(--faint);
+}
+
+.prose blockquote {
+  margin: 1.5em 0;
+  padding-left: 1em;
+  border-left: 2px solid var(--accent);
+  color: var(--muted);
+  font-style: italic;
+}
+
+.prose code {
+  font-family: var(--mono);
+  font-size: 0.8em;
+  background: var(--rule);
+  padding: 0.1em 0.35em;
+  border-radius: 3px;
+}
+
+.prose pre {
+  font-size: 0.85rem;
+  padding: 1rem;
+  border-radius: 6px;
+  overflow-x: auto;
+}
+
+.prose pre code {
+  background: none;
+  padding: 0;
+}
+
+.prose hr {
+  border: 0;
+  border-top: 1px solid var(--rule);
+  margin: 2.5rem 0;
+}
+
+.prose img {
+  max-width: 100%;
+  height: auto;
+  border-radius: 4px;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  * {
+    transition: none !important;
+    animation: none !important;
+  }
+}
+
+/* Screenshots in project write-ups */
+.shot {
+  margin: 1.75rem 0;
+}
+.shot img {
+  display: block;
+  width: 100%;
+  height: auto;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+}
+.shot figcaption {
+  margin-top: 0.6rem;
+  font-size: 0.85rem;
+  color: var(--muted);
+}
+
+/* Then/now crossfade on the "This site" project page */
+.then-now {
+  position: relative;
+  margin: 1.75rem 0;
+  aspect-ratio: 1600 / 880;
+  border: 1px solid var(--rule);
+  border-radius: 6px;
+  overflow: hidden;
+}
+.then-now img {
+  position: absolute;
+  inset: 0;
+  width: 100%;
+  height: 100%;
+  object-fit: cover;
+  border-radius: 0;
+}
+.then-now .then {
+  animation: then-now 10s ease-in-out infinite;
+}
+@keyframes then-now {
+  0%, 35% { opacity: 1; }
+  50%, 85% { opacity: 0; }
+  100% { opacity: 1; }
+}
+@media (prefers-reduced-motion: reduce) {
+  .then-now .then { animation: none; }
+}
+

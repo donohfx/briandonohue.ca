@@ -1,0 +1,20 @@
+---
+// Renders an email link that's put together in the browser, so it never
+// appears as plain text in the HTML that spam scrapers read.
+interface Props {
+  address: string;
+}
+const { address } = Astro.props;
+const [user, domain] = address.split('@');
+const reversed = [...`${user}@${domain}`].reverse().join('');
+---
+
+<a class="email" data-r={reversed} href="#">Email</a>
+
+<script>
+  document.querySelectorAll<HTMLAnchorElement>('a.email[data-r]').forEach((a) => {
+    const addr = [...(a.dataset.r ?? '')].reverse().join('');
+    a.href = `mailto:${addr}`;
+    a.textContent = addr;
+  });
+</script>

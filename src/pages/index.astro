@@ -1,0 +1,144 @@
+---
+import Base from '../layouts/Base.astro';
+import ProjectList from '../components/ProjectList.astro';
+import { site, kindWords } from '../site';
+import Quote from '../components/Quote.astro';
+import Email from '../components/Email.astro';
+import { getProjects } from '../lib/content';
+
+const featured = kindWords.find((k) => k.featured)!;
+const projects = (await getProjects()).slice(0, 3);
+const [y, m] = site.nowUpdated.split('-').map(Number);
+const nowLabel = new Date(Date.UTC(y, m - 1, 1)).toLocaleDateString('en-CA', {
+  month: 'long',
+  year: 'numeric',
+  timeZone: 'UTC',
+});
+---
+
+<Base>
+  <section class="intro">
+    <h1>
+      I’m Brian, a technology professional in Halifax. I start with the customer’s problem and get
+      the right people around it.
+    </h1>
+    <div class="body">
+      <p>
+        Most of my work has been in commerce, mostly where money moves (payments, wallets, tax). I
+        spent eleven years at Shopify. I started in merchant support and left as product lead for
+        Shop and Shop Pay. Along the way I owned Shopify’s tax platform and helped take Shop Pay
+        beyond Shopify for the first time.
+      </p>
+      <p>
+        Today I’m a Principal Product Manager at <a href="https://www.ordergroove.com"
+          >Ordergroove</a
+        >. We run subscriptions and memberships for enterprise brands, and the goal is to put
+        relationships at the centre of commerce. I’m working on what payments look like there now
+        that AI agents are starting to shop for people. Off the clock I’m usually on or under <a
+          href="/projects/hardtack/">Hardtack</a
+        >, a 1976 race boat.
+      </p>
+      <p>More <a href="/about/">about me</a>.</p>
+    </div>
+  </section>
+
+  <section>
+    <h2 class="label">Now <span class="stamp">· {nowLabel}</span></h2>
+    <ul class="now">
+      {site.now.map((item) => <li>{item}</li>)}
+    </ul>
+  </section>
+
+  <section>
+    <Quote {...featured} />
+  </section>
+
+  <section>
+    <h2 class="label">Projects</h2>
+    <ProjectList projects={projects} />
+    <p class="more"><a href="/projects/">All projects</a></p>
+  </section>
+
+  <section>
+    <h2 class="label">Say hello</h2>
+    <p class="open">I’m up for advising, speaking, or a coffee chat about payments and commerce.</p>
+    <ul class="links">
+      {
+        site.email && (
+          <li>
+            <Email address={site.email} />
+          </li>
+        )
+      }
+      {
+        site.links.map((l) => (
+          <li>
+            <a href={l.href} rel="me noopener">
+              {l.label}
+            </a>
+          </li>
+        ))
+      }
+    </ul>
+  </section>
+</Base>
+
+<style>
+  .intro h1 {
+    font-size: clamp(1.6rem, 4.6vw, 2.15rem);
+    line-height: 1.25;
+    font-weight: 400;
+    letter-spacing: -0.015em;
+    text-wrap: pretty;
+    margin-bottom: 1.75rem;
+  }
+  .intro .body {
+    color: var(--muted);
+    max-width: 33rem;
+  }
+  .intro .body a {
+    color: var(--ink);
+  }
+  .stamp {
+    color: var(--faint);
+    text-transform: none;
+    letter-spacing: 0;
+    font-weight: 400;
+  }
+  .now {
+    margin: 0;
+    padding: 0;
+    list-style: none;
+  }
+  .now li {
+    position: relative;
+    padding-left: 1.25rem;
+  }
+  .now li + li {
+    margin-top: 0.4rem;
+  }
+  .now li::before {
+    content: '';
+    position: absolute;
+    left: 0;
+    top: 0.72em;
+    width: 0.5rem;
+    height: 1px;
+    background: var(--accent);
+  }
+  .more {
+    margin-top: 1rem;
+    font-size: 0.9rem;
+  }
+  .open {
+    margin: 0 0 1rem;
+  }
+  .links {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.5rem;
+  }
+</style>
