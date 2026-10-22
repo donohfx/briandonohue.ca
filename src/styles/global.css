@@ -13,6 +13,7 @@
   --rule: #c9d3cf;
   --accent: #a8155f;
   --select: #f0c9dc;
+  --neat: #9fb0aa;
 
   --serif: 'Source Serif 4 Variable', Georgia, serif;
   --sans: 'IBM Plex Sans Variable', system-ui, -apple-system, sans-serif;
@@ -39,6 +40,8 @@
     --rule: #223241;
     --accent: #d0a956;
     --select: #3a3220;
+  --neat: #4a5d6d;
+    --neat: #4a5d6d;
     color-scheme: dark;
   }
 }
@@ -50,6 +53,7 @@
   --rule: #223241;
   --accent: #d0a956;
   --select: #3a3220;
+  --neat: #4a5d6d;
   color-scheme: dark;
 }
 

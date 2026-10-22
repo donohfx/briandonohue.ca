@@ -4,29 +4,39 @@ const year = new Date().getFullYear();
 ---
 
 <footer class="wrap">
+  <div class="neatline" aria-hidden="true"></div>
   <div class="row">
     <span>© {year} {site.name}</span>
-    <span class="coords" title={site.location}>{site.coords}</span>
+    <span class="right">
+      <button class="konami" type="button" aria-label="Easter egg. Try the Konami code, or press here">↑↑↓↓←→←→BA</button>
+      <span class="coords" title={site.location}>{site.coords}</span>
+    </span>
   </div>
-  <div class="toast" role="status" aria-live="polite" hidden>Fair winds.</div>
 </footer>
 
 <script>
-  // A small nod to the old site. ↑↑↓↓←→←→BA
+  // ↑↑↓↓←→←→BA on a keyboard, or five quick taps on the coordinates on a phone,
+  // fires a 'konami' event. EasterEgg.astro decides what happens.
   const code = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
   let i = 0;
+  const fire = () => window.dispatchEvent(new Event('konami'));
   window.addEventListener('keydown', (e) => {
     i = e.key === code[i] ? i + 1 : e.key === code[0] ? 1 : 0;
     if (i < code.length) return;
     i = 0;
-    const toast = document.querySelector<HTMLElement>('.toast');
-    if (!toast) return;
-    toast.hidden = false;
-    document.documentElement.classList.add('flag');
-    setTimeout(() => {
-      toast.hidden = true;
-      document.documentElement.classList.remove('flag');
-    }, 2600);
+    fire();
+  });
+  document.querySelector('.konami')?.addEventListener('click', fire);
+  let taps = 0;
+  let tapTimer: number | undefined;
+  document.querySelector('.coords')?.addEventListener('click', () => {
+    taps += 1;
+    clearTimeout(tapTimer);
+    tapTimer = window.setTimeout(() => (taps = 0), 1500);
+    if (taps >= 5) {
+      taps = 0;
+      fire();
+    }
   });
 </script>
 
@@ -36,31 +46,48 @@ const year = new Date().getFullYear();
     font-size: 0.8rem;
     color: var(--faint);
   }
+  /* Neatline: the striped scale bar from the border of a nautical chart */
+  .neatline {
+    height: 5px;
+    border: 1px solid var(--neat);
+    background: repeating-linear-gradient(90deg, var(--neat) 0 18px, transparent 18px 36px);
+    margin-bottom: 1.25rem;
+  }
   .row {
     display: flex;
     justify-content: space-between;
-    gap: 1rem;
-    border-top: 1px solid var(--rule);
-    padding-top: 1.25rem;
+    flex-wrap: wrap;
+    gap: 0.5rem 1rem;
+  }
+  .right {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem 1.25rem;
+    align-items: baseline;
+  }
+  .konami {
+    appearance: none;
+    background: none;
+    border: 0;
+    padding: 0;
+    font: inherit;
+    font-family: var(--meta-font);
+    letter-spacing: 0.08em;
+    color: var(--faint);
+    cursor: pointer;
+    transition: color 0.2s ease;
+  }
+  .konami:hover,
+  .konami:focus-visible {
+    color: var(--accent);
+  }
+  .konami:focus-visible {
+    outline: 2px solid var(--accent);
+    outline-offset: 3px;
+    border-radius: 2px;
   }
   .coords {
     font-family: var(--meta-font);
     font-variant-numeric: tabular-nums;
-  }
-  .toast {
-    position: fixed;
-    left: 50%;
-    bottom: 1.5rem;
-    transform: translateX(-50%);
-    background: var(--ink);
-    color: var(--bg);
-    font-family: var(--serif);
-    font-style: italic;
-    font-size: 1rem;
-    padding: 0.5rem 1rem;
-    border-radius: 999px;
-  }
-  :global(html.flag) :global(.coords) {
-    color: var(--accent);
   }
 </style>
