@@ -9,7 +9,7 @@ export const site = {
     'Brian Donohue is a technology professional in Halifax working on payments for subscriptions and relationship commerce, with deep roots in payments, wallets, and tax.',
 
   // Leave email empty to hide it everywhere.
-  email: '',
+  email: 'hello@briandonohue.ca',
 
   links: [
     { label: 'LinkedIn', href: 'https://www.linkedin.com/in/brian-donohue-a61357114/' },
@@ -23,6 +23,7 @@ export const site = {
     'Hardtack is on the hard for the winter, still leaking oil, with a new sail that never got used.',
   ],
   nowUpdated: '2026-10',
+
 };
 
 // Excerpts from LinkedIn recommendations. Keep them verbatim.
