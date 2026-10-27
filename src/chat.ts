@@ -74,6 +74,8 @@ export const topics: Topic[] = [
 export const replies = {
   noMatch: 'I don’t have a saved answer for that one. Want to send it to me directly?',
   askEmail: 'What’s your email, so I can reply?',
+  // After "Can we talk?", the next thing typed is taken as a message to me.
+  gotMessage: 'Got it. What’s your email, so I can reply?',
   badEmail: 'That doesn’t look like an email. Try again?',
   sent: 'Got it. It’s in my inbox, and I’ll reply to {email}.',
   failed: 'That didn’t go through. Email me at {address} instead.',

@@ -70,6 +70,7 @@ const json = JSON.stringify(data).replace(/</g, '\\u003c');
 <!-- Netlify Forms looks for this at build time. Messages typed in the chat post to it. -->
 <form name="chat" method="POST" data-netlify="true" netlify-honeypot="bot-field" hidden>
   <input name="bot-field" />
+  <input name="subject" type="hidden" />
   <input name="email" type="email" />
   <textarea name="message"></textarea>
 </form>
@@ -99,7 +100,8 @@ const json = JSON.stringify(data).replace(/</g, '\\u003c');
 
   let busy = true;
   let ready = false;
-  let mode: 'chat' | 'confirm' | 'email' = 'chat';
+  // compose: right after "Can we talk?", the next typed text is a message to Brian.
+  let mode: 'chat' | 'confirm' | 'email' | 'compose' = 'chat';
   let pending = '';
   let asked = new Set<string>();
   let startedAt = Date.now();
@@ -285,13 +287,14 @@ const json = JSON.stringify(data).replace(/</g, '\\u003c');
     if (mode === 'confirm') {
       add('Yes, send it', () => confirm(true), true);
       add('No thanks', () => confirm(false));
-    } else if (mode === 'chat') {
+    } else if (mode === 'chat' || mode === 'compose') {
       topics.filter((t) => !asked.has(t.id)).forEach((t) => add(t.q, () => ask(t)));
     }
     chips.hidden = !ready || chips.children.length === 0;
     input.type = mode === 'email' ? 'email' : 'text';
     input.autocomplete = mode === 'email' ? 'email' : 'off';
-    input.placeholder = mode === 'email' ? 'you@example.com' : 'Ask me something, or leave a message…';
+    input.placeholder =
+      mode === 'email' ? 'you@example.com' : mode === 'compose' ? 'Type your message…' : 'Ask me something, or leave a message…';
     if (was >= 0) {
       const next = chips.hidden ? input : (chips.children[Math.min(was, chips.children.length - 1)] as HTMLElement);
       next.focus({ preventScroll: true });
@@ -327,6 +330,7 @@ const json = JSON.stringify(data).replace(/</g, '\\u003c');
     if (t.links) extra = () => bubble('brian', '', { links: t.links });
     if (t.contact) extra = () => bubble('brian', '', { links: contactLinks });
     await say(t.a, extra);
+    if (t.contact) mode = 'compose';
     if (t.receipt) await wait(1900);
     unlock();
   }
@@ -348,13 +352,15 @@ const json = JSON.stringify(data).replace(/</g, '\\u003c');
     }
   }
 
+  // Netlify uses `email` as the Reply-To, so replying to the notification reaches the visitor.
+  const SUBJECT = 'New message from the briandonohue.ca chat';
   async function send(message: string, from: string) {
     if (import.meta.env.DEV) return true; // Netlify Forms only exist once deployed.
     try {
       const res = await fetch('/', {
         method: 'POST',
         headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-        body: new URLSearchParams({ 'form-name': 'chat', email: from, message }).toString(),
+        body: new URLSearchParams({ 'form-name': 'chat', subject: SUBJECT, email: from, message }).toString(),
       });
       return res.ok;
     } catch {
@@ -384,6 +390,7 @@ const json = JSON.stringify(data).replace(/</g, '\\u003c');
     follow = true;
     input.value = '';
     if (mode === 'email') return takeEmail(text);
+    const composing = mode === 'compose';
     mode = 'chat';
     if (new RegExp(data.egg.typed, 'i').test(text)) return cheat(text);
     const secret = (data.secrets as { match: string; a: string[] }[]).find((s) => new RegExp(s.match, 'i').test(text));
@@ -393,6 +400,18 @@ const json = JSON.stringify(data).replace(/</g, '\\u003c');
       bubble('you', text);
       await say(secret.a);
       unlock();
+      return;
+    }
+    // They were just asked to type a message: take it as one, don't match it to an answer.
+    if (composing) {
+      lock();
+      said.push(text);
+      pending = text;
+      mode = 'email';
+      bubble('you', text);
+      await say([data.replies.gotMessage]);
+      unlock();
+      input.focus();
       return;
     }
     const hit = topics.find((t) => new RegExp(t.match, 'i').test(text));
@@ -501,7 +520,7 @@ const json = JSON.stringify(data).replace(/</g, '\\u003c');
     asked = new Set(saved.asked);
     said = saved.said || [];
     startedAt = saved.startedAt || startedAt;
-    mode = saved.mode === 'confirm' || saved.mode === 'email' ? saved.mode : 'chat';
+    mode = ['confirm', 'email', 'compose'].includes(saved.mode) ? saved.mode : 'chat';
     pending = saved.pending || '';
     log.setAttribute('aria-live', 'off');
     follow = false;
