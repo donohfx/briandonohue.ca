@@ -414,8 +414,21 @@ const json = JSON.stringify(data).replace(/</g, '\\u003c');
       input.focus();
       return;
     }
+    // "receipt" on its own: my receipt first, then theirs.
+    if (/\breceipts?\b/i.test(text)) {
+      const done = topics.find((t) => t.receipt);
+      return done && !asked.has(done.id) ? ask(done, text) : cheat(text);
+    }
     const hit = topics.find((t) => new RegExp(t.match, 'i').test(text));
     if (hit) return ask(hit, text);
+    if (text.split(/\s+/).length < 4) {
+      lock();
+      said.push(text);
+      bubble('you', text);
+      await say([data.replies.unsure]);
+      unlock();
+      return;
+    }
     lock();
     said.push(text);
     pending = text;

@@ -24,7 +24,7 @@ export const topics: Topic[] = [
   {
     id: 'what',
     q: 'What do you work on?',
-    match: 'what do you do|work on|your job|role|who are you|about you',
+    match: 'what do you do|work(ing)? on|your (job|role)|who are you|about you',
     a: [
       'Most of my work has been in commerce, mostly where money moves (payments, wallets, tax).',
       'I spent eleven years at Shopify. I started in merchant support and left as product lead for Shop and Shop Pay. Along the way I owned Shopify’s tax platform and helped take Shop Pay beyond Shopify for the first time.',
@@ -35,20 +35,20 @@ export const topics: Topic[] = [
   {
     id: 'done',
     q: 'What have you done?',
-    match: 'done|career|resume|résumé|\\bcv\\b|history|experience|background|shopify|worked',
+    match: '\\bdone\\b|career|r[eé]sum[eé]|\\bcv\\b|work history|experience|background|where have you worked|past jobs',
     a: ['Here’s the itemized version.'],
     receipt: true,
   },
   {
     id: 'now',
     q: 'What’s on your plate now?',
-    match: '\\bnow\\b|current|lately|plate|these days|up to|hardtack|boat',
+    match: '\\bnow\\b|currently|lately|on your plate|these days|what are you up to|up to lately|hardtack|\\bboat\\b',
     a: [], // filled from site.now
   },
   {
     id: 'how',
     q: 'What are you like to work with?',
-    match: 'like to work|work with|style|how do you work|manager|team|reference',
+    match: 'like to work with|work(ing)? with you|how do you work|management style',
     a: [
       'If I can’t explain who something helps and what it fixes for them, it isn’t ready to build.',
       'I’d rather say the awkward thing early than watch it come up in a retro.',
@@ -58,7 +58,7 @@ export const topics: Topic[] = [
   {
     id: 'talk',
     q: 'Can we talk?',
-    match: 'talk|contact|email|reach|hire|coffee|advis|speak|meet|call',
+    match: '\\btalk\\b|contact|\\bemail\\b|reach you|\\bhire\\b|coffee|advis|speaking|\\bmeet\\b|\\bcall\\b',
     a: [
       'I’m up for advising, speaking, or a coffee chat about payments and commerce.',
       'Enter your message below, or use one of these links.',
@@ -73,6 +73,8 @@ export const topics: Topic[] = [
 
 export const replies = {
   noMatch: 'I don’t have a saved answer for that one. Want to send it to me directly?',
+  // A short message it can't place (under four words): nudge instead of offering to send it.
+  unsure: 'Not sure I follow. Try one of the questions below, or write me a proper message and I’ll pass it along.',
   askEmail: 'What’s your email, so I can reply?',
   // After "Can we talk?", the next thing typed is taken as a message to me.
   gotMessage: 'Got it. What’s your email, so I can reply?',
