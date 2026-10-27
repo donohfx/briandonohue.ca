@@ -3,14 +3,15 @@
 Things to add to the site when there's time. Rough priority order.
 
 ## Needs a decision or content from Brian
-- [ ] Email: pick the address (an alias like hello@ that forwards to the main inbox is easiest to shut off if it gets spammy), then set `email` in `src/site.ts`.
-- [ ] Photo: a small portrait for the About page (the sailing shot from the old site works).
+- [ ] Netlify: turn on email notifications for the `chat` form (Forms › chat › Form notifications) after the first deploy.
+- [ ] Rewrite the joke lines in `src/chat.ts` in your own voice (receipt notes and totals, hidden replies, cheat code lines).
 - [ ] Hardtack photo for the project page.
 - [ ] Talks: add Shoptalk 2024 (Customer Innovation panel) and the Everlane interview. Embed the Shopify/Wistia video rather than re-hosting it.
 - [ ] web-video: add the GitHub link once the repo is public.
 
 ## Keep fresh
-- [ ] Update the Now list and `nowUpdated` in `src/site.ts` every few months (next: early 2027).
+- [ ] Update the Now list and `nowUpdated` in `src/site.ts` every few months (next: early 2027). It's also the chat's "What's on your plate now?" answer.
+- [ ] Update the receipt in `src/chat.ts` when the job changes.
 - [ ] When off the DYC committee, change the About and yacht club project lines to past tense.
 
 ## Writing
@@ -20,7 +21,5 @@ Things to add to the site when there's time. Rough priority order.
 
 ## Nice to have
 - [ ] Shopify Tax project visual (simple diagram of tax calculation in checkout).
-
-## Launch
-- [ ] Push to GitHub and connect the repo to Netlify.
-- [ ] Point briandonohue.ca at the new Netlify site once the first deploy looks right.
+- [ ] Project cards inside the chat ("What have you built?").
+- [ ] A new social card (public/og.png) that shows the chat.

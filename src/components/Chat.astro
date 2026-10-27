@@ -1,0 +1,745 @@
+---
+// The homepage. Without JavaScript it renders the whole conversation as plain
+// text (search engines and no-JS visitors get everything). With JavaScript the
+// script below clears that and plays it as a chat.
+import { site, kindWords } from '../site';
+import CardHead from './CardHead.astro';
+import { opener, topics as baseTopics, replies, secrets, egg, bulbOut } from '../chat';
+import Receipt from './Receipt.astro';
+
+const featured = kindWords.find((k) => k.featured)!;
+const topics = baseTopics.map((t) => (t.id === 'now' ? { ...t, a: site.now } : t));
+const reversedEmail = site.email ? [...site.email].reverse().join('') : '';
+
+const data = {
+  opener,
+  topics,
+  replies,
+  secrets,
+  egg,
+  bulbOut,
+  quote: { text: `“${featured.quote}”`, cite: `${featured.name}, ${featured.role}` },
+  email: reversedEmail,
+  links: site.links,
+};
+const json = JSON.stringify(data).replace(/</g, '\\u003c');
+---
+
+<section class="chat card-shell" aria-label="Chat with Brian">
+  <CardHead live />
+
+  <div class="log" role="log" aria-live="polite" aria-label="Conversation" tabindex="0" data-log>
+    <div class="row you"><div class="bubble"><p>{opener.q}</p></div></div>
+    <div class="row turn"><div class="bubble big"><p>{opener.a}</p></div></div>
+    {
+      topics.map((t) => (
+        <>
+          <div class="row you turn"><div class="bubble"><p>{t.q}</p></div></div>
+          {(t.noJs ?? t.a).map((line, i) => (
+            <div class:list={['row', { turn: i === 0 }]}><div class="bubble"><p>{line}</p></div></div>
+          ))}
+          {t.receipt && <div class="row"><Receipt /></div>}
+          {t.quote && (
+            <div class="row"><div class="bubble"><p>{data.quote.text}</p><p class="cite">{data.quote.cite}</p></div></div>
+          )}
+          {t.links && (
+            <div class="row"><div class="bubble"><p class="links">{t.links.map((l) => <a href={l.href}>{l.label}</a>)}</p></div></div>
+          )}
+          {t.contact && (
+            <div class="row"><div class="bubble"><p class="links">{site.links.map((l) => <a href={l.href} rel="me noopener">{l.label}</a>)}</p></div></div>
+          )}
+        </>
+      ))
+    }
+  </div>
+
+  <div class="chat-foot js-only">
+    <div class="chips" role="group" aria-label="Suggested questions" data-chips hidden></div>
+    <form class="compose" data-form>
+      <label for="chat-input" class="sr-only">Message Brian</label>
+      <input id="chat-input" name="q" type="text" autocomplete="off" enterkeyhint="send" placeholder="Ask me something, or leave a message…" data-input />
+      <button type="submit" aria-label="Send">
+        <svg viewBox="0 0 24 24" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6" /></svg>
+      </button>
+    </form>
+  </div>
+</section>
+
+<template id="receipt-tpl"><Receipt /></template>
+
+<!-- Netlify Forms looks for this at build time. Messages typed in the chat post to it. -->
+<form name="chat" method="POST" data-netlify="true" netlify-honeypot="bot-field" hidden>
+  <input name="bot-field" />
+  <input name="email" type="email" />
+  <textarea name="message"></textarea>
+</form>
+
+<script type="application/json" id="chat-data" set:html={json} />
+
+<script>
+  type Link = { label: string; href: string };
+  type Topic = {
+    id: string; q: string; match: string; a: string[];
+    receipt?: boolean; quote?: boolean; links?: Link[]; contact?: boolean;
+  };
+  const data = JSON.parse(document.getElementById('chat-data')!.textContent!);
+  const topics: Topic[] = data.topics;
+  const email: string = [...(data.email as string)].reverse().join('');
+  const contactLinks: Link[] = [...(email ? [{ label: email, href: `mailto:${email}` }] : []), ...data.links];
+
+  const log = document.querySelector<HTMLElement>('[data-log]')!;
+  const chips = document.querySelector<HTMLElement>('[data-chips]')!;
+  const form = document.querySelector<HTMLFormElement>('[data-form]')!;
+  const input = document.querySelector<HTMLInputElement>('[data-input]')!;
+  const sub = document.querySelector<HTMLElement>('[data-sub]')!;
+  const tpl = document.getElementById('receipt-tpl') as HTMLTemplateElement;
+
+  const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  const wait = (ms: number) => new Promise((r) => setTimeout(r, reduce ? Math.min(ms, 120) : ms));
+
+  let busy = true;
+  let ready = false;
+  let mode: 'chat' | 'confirm' | 'email' = 'chat';
+  let pending = '';
+  let asked = new Set<string>();
+  let startedAt = Date.now();
+  let said: string[] = []; // everything the visitor asked or typed, for their receipt
+  let typingEl: HTMLElement | null = null;
+
+  log.replaceChildren();
+
+  // ---------- Memory for this tab ----------
+  // The conversation is kept in sessionStorage, so going to About or Projects
+  // and back picks up where it left off. It lives only in this browser tab.
+  type Entry =
+    | { k: 'msg'; from: 'you' | 'brian'; text: string; big?: boolean; cite?: string; links?: Link[] }
+    | { k: 'receipt' }
+    | { k: 'html'; html: string };
+  const KEY = 'chat-v1';
+  let history: Entry[] = [];
+  function save() {
+    try {
+      sessionStorage.setItem(
+        KEY,
+        JSON.stringify({ history, asked: [...asked], said, startedAt, mode, pending, top: log.scrollTop, atEnd: nearBottom() }),
+      );
+    } catch {}
+  }
+  function load() {
+    try {
+      // A reload starts the conversation over; following a link back here doesn't.
+      const nav = performance.getEntriesByType('navigation')[0] as PerformanceNavigationTiming | undefined;
+      if (nav?.type === 'reload') {
+        sessionStorage.removeItem(KEY);
+        return null;
+      }
+      const s = JSON.parse(sessionStorage.getItem(KEY) || 'null');
+      return s && Array.isArray(s.history) && s.history.length ? s : null;
+    } catch {
+      return null;
+    }
+  }
+
+  // Keep the newest message in view. Re-run after layout, after each bubble's
+  // entrance animation and the receipt's print (both move things while they
+  // play), and once web fonts land. Stop following if the visitor scrolls up
+  // to reread; start again when they ask something or scroll back down.
+  let follow = true;
+  const nearBottom = () => log.scrollHeight - log.scrollTop - log.clientHeight < 48;
+  function scroll() {
+    if (!follow) return;
+    requestAnimationFrame(() => log.scrollTo({ top: log.scrollHeight, behavior: reduce ? 'auto' : 'smooth' }));
+  }
+  const userScrolled = () => requestAnimationFrame(() => (follow = nearBottom()));
+  log.addEventListener('wheel', userScrolled, { passive: true });
+  log.addEventListener('touchmove', userScrolled, { passive: true });
+  log.addEventListener('animationend', scroll);
+  document.fonts?.ready.then(scroll);
+
+  function row(from: 'you' | 'brian', animate = true) {
+    const r = document.createElement('div');
+    r.className = 'row' + (animate ? ' in' : '') + (from === 'you' ? ' you' : '');
+    r.dataset.from = from;
+    const prev = [...log.children].reverse().find((el) => el !== typingEl) as HTMLElement | undefined;
+    if (prev && prev.dataset.from !== from) r.classList.add('turn');
+    return r;
+  }
+
+  type Opts = { big?: boolean; cite?: string; links?: Link[] };
+  function bubble(from: 'you' | 'brian', text: string, opts: Opts = {}) {
+    drawBubble(from, text, opts);
+    history.push({ k: 'msg', from, text, ...opts });
+    save();
+  }
+
+  function drawBubble(from: 'you' | 'brian', text: string, opts: Opts = {}, animate = true) {
+    const r = row(from, animate);
+    const b = document.createElement('div');
+    b.className = 'bubble' + (opts.big ? ' big' : '');
+    if (text) {
+      const p = document.createElement('p');
+      p.textContent = text;
+      b.append(p);
+    }
+    if (opts.cite) {
+      const c = document.createElement('p');
+      c.className = 'cite';
+      c.textContent = opts.cite;
+      b.append(c);
+    }
+    if (opts.links) {
+      const l = document.createElement('p');
+      l.className = 'links';
+      for (const { label, href } of opts.links) {
+        const a = document.createElement('a');
+        a.href = href;
+        a.textContent = label;
+        if (/^https?:/.test(href)) {
+          a.target = '_blank';
+          a.rel = 'me noopener';
+          const note = document.createElement('span');
+          note.className = 'sr-only';
+          note.textContent = ' (opens in a new tab)';
+          a.append(note);
+        }
+        l.append(a);
+      }
+      b.append(l);
+    }
+    r.append(b);
+    log.append(r);
+    scroll();
+  }
+
+  function setTyping(on: boolean) {
+    if (on && !typingEl) {
+      typingEl = document.createElement('div');
+      typingEl.className = 'row in';
+      typingEl.dataset.from = 'brian';
+      typingEl.setAttribute('aria-hidden', 'true');
+      typingEl.innerHTML = '<div class="bubble typing"><span></span><span></span><span></span></div>';
+      log.append(typingEl);
+      sub.textContent = 'typing…';
+      scroll();
+    } else if (!on && typingEl) {
+      typingEl.remove();
+      typingEl = null;
+      sub.textContent = 'Usually replies within a day';
+    }
+  }
+
+  async function say(lines: string[], extra?: () => void) {
+    for (const [i, line] of lines.entries()) {
+      await wait(i === 0 ? 400 : 250);
+      setTyping(true);
+      await wait(Math.min(500 + line.length * 9, 1500));
+      setTyping(false);
+      bubble('brian', line);
+    }
+    if (extra) {
+      await wait(250);
+      setTyping(true);
+      await wait(700);
+      setTyping(false);
+      extra();
+    }
+  }
+
+  function printReceipt() {
+    drawReceipt();
+    history.push({ k: 'receipt' });
+    save();
+  }
+  function drawReceipt(animate = true) {
+    const r = row('brian', animate);
+    const node = tpl.content.firstElementChild!.cloneNode(true) as HTMLElement;
+    if (animate) node.classList.add('print');
+    r.append(node);
+    log.append(r);
+    scroll();
+  }
+  // A receipt built on the fly (the cheat code). Stored as the markup we built,
+  // so it reprints exactly the same; all text in it was set with textContent.
+  function drawHtml(html: string, animate = true) {
+    const r = row('brian', animate);
+    r.innerHTML = html;
+    if (!animate) r.querySelector('.print')?.classList.remove('print');
+    log.append(r);
+    scroll();
+  }
+
+  function renderChips() {
+    // If a chip had keyboard focus, keep focus in the same place after the
+    // buttons change (the one just pressed disappears).
+    const was = [...chips.children].indexOf(document.activeElement as Element);
+    chips.replaceChildren();
+    const add = (label: string, onClick: () => void, solid = false) => {
+      const b = document.createElement('button');
+      b.type = 'button';
+      b.className = 'chip' + (solid ? ' solid' : '');
+      b.textContent = label;
+      if (busy) b.setAttribute('aria-disabled', 'true');
+      b.addEventListener('click', onClick);
+      chips.append(b);
+    };
+    if (mode === 'confirm') {
+      add('Yes, send it', () => confirm(true), true);
+      add('No thanks', () => confirm(false));
+    } else if (mode === 'chat') {
+      topics.filter((t) => !asked.has(t.id)).forEach((t) => add(t.q, () => ask(t)));
+    }
+    chips.hidden = !ready || chips.children.length === 0;
+    input.type = mode === 'email' ? 'email' : 'text';
+    input.autocomplete = mode === 'email' ? 'email' : 'off';
+    input.placeholder = mode === 'email' ? 'you@example.com' : 'Ask me something, or leave a message…';
+    if (was >= 0) {
+      const next = chips.hidden ? input : (chips.children[Math.min(was, chips.children.length - 1)] as HTMLElement);
+      next.focus({ preventScroll: true });
+    }
+  }
+
+  function lock() {
+    busy = true;
+    renderChips();
+  }
+  function unlock() {
+    busy = false;
+    renderChips();
+    save();
+  }
+  let saveTimer: number | undefined;
+  log.addEventListener('scroll', () => {
+    clearTimeout(saveTimer);
+    saveTimer = window.setTimeout(save, 150);
+  }, { passive: true });
+  window.addEventListener('pagehide', save);
+
+  async function ask(t: Topic, typed?: string) {
+    if (busy) return;
+    follow = true;
+    lock();
+    asked.add(t.id);
+    said.push(typed || t.q);
+    bubble('you', typed || t.q);
+    let extra: (() => void) | undefined;
+    if (t.receipt) extra = printReceipt;
+    if (t.quote) extra = () => bubble('brian', data.quote.text, { cite: data.quote.cite });
+    if (t.links) extra = () => bubble('brian', '', { links: t.links });
+    if (t.contact) extra = () => bubble('brian', '', { links: contactLinks });
+    await say(t.a, extra);
+    if (t.receipt) await wait(1900);
+    unlock();
+  }
+
+  async function confirm(yes: boolean) {
+    if (busy) return;
+    lock();
+    bubble('you', yes ? 'Yes, send it' : 'No thanks');
+    if (yes) {
+      mode = 'email';
+      await say([data.replies.askEmail]);
+      unlock();
+      input.focus();
+    } else {
+      mode = 'chat';
+      pending = '';
+      await say([data.replies.declined]);
+      unlock();
+    }
+  }
+
+  async function send(message: string, from: string) {
+    if (import.meta.env.DEV) return true; // Netlify Forms only exist once deployed.
+    try {
+      const res = await fetch('/', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
+        body: new URLSearchParams({ 'form-name': 'chat', email: from, message }).toString(),
+      });
+      return res.ok;
+    } catch {
+      return false;
+    }
+  }
+
+  async function takeEmail(text: string) {
+    lock();
+    bubble('you', text);
+    if (!/^[^\s@]+@[^\s@]+\.[^\s@]+$/.test(text)) {
+      await say([data.replies.badEmail]);
+      unlock();
+      return;
+    }
+    const ok = await send(pending, text);
+    mode = 'chat';
+    pending = '';
+    await say([ok ? data.replies.sent.replace('{email}', text) : data.replies.failed.replace('{address}', email)]);
+    unlock();
+  }
+
+  form.addEventListener('submit', async (e) => {
+    e.preventDefault();
+    const text = input.value.trim();
+    if (!text || busy) return;
+    follow = true;
+    input.value = '';
+    if (mode === 'email') return takeEmail(text);
+    mode = 'chat';
+    if (new RegExp(data.egg.typed, 'i').test(text)) return cheat(text);
+    const secret = (data.secrets as { match: string; a: string[] }[]).find((s) => new RegExp(s.match, 'i').test(text));
+    if (secret) {
+      lock();
+      said.push(text);
+      bubble('you', text);
+      await say(secret.a);
+      unlock();
+      return;
+    }
+    const hit = topics.find((t) => new RegExp(t.match, 'i').test(text));
+    if (hit) return ask(hit, text);
+    lock();
+    said.push(text);
+    pending = text;
+    mode = 'confirm';
+    bubble('you', text);
+    await say([data.replies.noMatch]);
+    unlock();
+  });
+
+  // ---------- Cheat code: a receipt for the visitor's own visit ----------
+  function visitorReceipt() {
+    const el = (tag: string, cls = '', text = '') => {
+      const n = document.createElement(tag);
+      if (cls) n.className = cls;
+      if (text) n.textContent = text;
+      return n;
+    };
+    const line = (left: string, right: string, cls = 'r-line', bold = false) => {
+      const l = el('span', cls);
+      l.append(bold ? el('b', '', left) : el('span', '', left), el('span', '', right));
+      return l;
+    };
+    const wrap = el('div', 'receipt print');
+    const paper = el('div', 'paper');
+    const now = new Date();
+    const secs = Math.max(1, Math.round((now.getTime() - startedAt) / 1000));
+    const time = secs < 60 ? `${secs}s` : `${Math.floor(secs / 60)}m ${secs % 60}s`;
+    paper.append(
+      el('p', 'r-name', data.egg.title),
+      el('p', 'r-sub', `briandonohue.ca · ${now.toLocaleString('en-CA', { dateStyle: 'medium', timeStyle: 'short' })}`),
+    );
+    const bar = el('div', 'r-bar');
+    bar.append(el('span', '', `ORDER #${1000 + Math.floor(Math.random() * 9000)}`), el('span', '', 'PAID'));
+    paper.append(bar);
+    const items = el('ul', 'r-items');
+    for (const q of said.length ? said : [data.egg.empty]) {
+      const li = el('li');
+      li.append(line(q, 'FREE', 'r-line', true));
+      items.append(li);
+    }
+    paper.append(items);
+    const totals = el('div', 'r-totals');
+    totals.append(line('SUBTOTAL', '$0.00'), line('TAX', '$0.00, checked twice'), line('TIME ON SITE', time));
+    paper.append(totals, line('TOTAL', '$0.00', 'r-total r-line'), line('PAID WITH', data.egg.paidWith));
+    const code = el('div', 'r-code');
+    code.setAttribute('aria-hidden', 'true');
+    for (let i = 0; i < 40; i++) {
+      const s = el('span');
+      s.style.width = `${1 + Math.floor(Math.random() * 4)}px`;
+      s.style.marginRight = `${2 + (i % 3 === 0 ? 1 : 0)}px`;
+      code.append(s);
+    }
+    paper.append(code, el('p', 'r-keep', data.egg.footer));
+    wrap.append(paper, el('div', 'tear'));
+    wrap.querySelector('.tear')!.setAttribute('aria-hidden', 'true');
+    drawHtml(wrap.outerHTML);
+    history.push({ k: 'html', html: wrap.outerHTML });
+    save();
+  }
+
+  let cheating = false;
+  async function cheat(typed?: string) {
+    if (cheating) return;
+    cheating = true;
+    while (busy || !ready) await wait(200);
+    follow = true;
+    lock();
+    if (typed) bubble('you', typed);
+    await say([data.egg.intro], visitorReceipt);
+    await wait(1900);
+    cheating = false;
+    unlock();
+  }
+
+  // The light switch burnt out (see ThemeToggle). Say something about it.
+  window.addEventListener('bulbout', async () => {
+    while (busy || !ready) await wait(200);
+    follow = true;
+    lock();
+    await wait(600);
+    await say(data.bulbOut);
+    unlock();
+  });
+
+  const code = ['ArrowUp', 'ArrowUp', 'ArrowDown', 'ArrowDown', 'ArrowLeft', 'ArrowRight', 'ArrowLeft', 'ArrowRight', 'b', 'a'];
+  let ki = 0;
+  window.addEventListener('keydown', (e) => {
+    const k = e.key.length === 1 ? e.key.toLowerCase() : e.key;
+    ki = k === code[ki] ? ki + 1 : k === code[0] ? 1 : 0;
+    if (ki < code.length) return;
+    ki = 0;
+    // If the code was typed into the message box, don't leave "ba" behind.
+    if (document.activeElement === input && input.value.toLowerCase().endsWith('ba')) input.value = input.value.slice(0, -2);
+    cheat();
+  });
+
+  // Coming back from About or Projects: redraw the conversation as it was,
+  // without replaying it and without reading it all out to screen readers again.
+  const saved = load();
+  if (saved) {
+    history = saved.history;
+    asked = new Set(saved.asked);
+    said = saved.said || [];
+    startedAt = saved.startedAt || startedAt;
+    mode = saved.mode === 'confirm' || saved.mode === 'email' ? saved.mode : 'chat';
+    pending = saved.pending || '';
+    log.setAttribute('aria-live', 'off');
+    follow = false;
+    for (const e of history) {
+      if (e.k === 'msg') drawBubble(e.from, e.text, { big: e.big, cite: e.cite, links: e.links }, false);
+      else if (e.k === 'receipt') drawReceipt(false);
+      else drawHtml(e.html, false);
+    }
+    log.scrollTop = saved.atEnd ? log.scrollHeight : saved.top;
+    follow = !!saved.atEnd;
+    requestAnimationFrame(() => {
+      if (saved.atEnd) log.scrollTop = log.scrollHeight;
+      log.setAttribute('aria-live', 'polite');
+    });
+    ready = true;
+    unlock();
+  } else (async () => {
+    await wait(500);
+    bubble('you', data.opener.q);
+    await wait(450);
+    setTyping(true);
+    await wait(1300);
+    setTyping(false);
+    bubble('brian', data.opener.a, { big: true });
+    await wait(500);
+    ready = true;
+    unlock();
+  })();
+</script>
+
+<style is:global>
+  .chat {
+    display: flex;
+    flex-direction: column;
+    height: min(46rem, calc(100dvh - 9rem));
+    min-height: 30rem;
+    background: var(--card);
+    color: var(--ink);
+    border-radius: 22px;
+    overflow: hidden;
+    box-shadow: var(--shadow);
+  }
+  html:not(.js) .chat {
+    height: auto;
+  }
+  .chat p {
+    margin: 0;
+  }
+  .chat .log:focus-visible {
+    outline: 2px solid var(--chat-accent);
+    outline-offset: -4px;
+  }
+  .fit .chat {
+    flex: 1 1 auto;
+    height: auto;
+    min-height: 22rem;
+    max-height: 56rem;
+  }
+  .chat .log {
+    flex: 1 1 auto;
+    min-height: 0;
+    overflow-y: auto;
+    padding: 1.5rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.6rem;
+  }
+  .chat .row {
+    display: flex;
+  }
+  .chat .row.you {
+    justify-content: flex-end;
+  }
+  .chat .row.turn {
+    margin-top: 0.75rem;
+  }
+  .chat .row.in {
+    animation: chat-in 0.32s cubic-bezier(0.2, 0.8, 0.2, 1) both;
+  }
+  .chat .bubble {
+    max-width: 80%;
+    padding: 0.7rem 1rem;
+    border-radius: 4px 16px 16px 16px;
+    background: var(--bubble);
+    line-height: 1.5;
+  }
+  .chat .you .bubble {
+    background: var(--you-bg);
+    color: var(--you-ink);
+    border-radius: 16px 16px 4px 16px;
+  }
+  .chat .bubble.big {
+    font-family: var(--serif);
+    font-size: 1.35rem;
+    line-height: 1.35;
+  }
+  .chat .cite {
+    margin-top: 0.5rem;
+    font-size: 0.8rem;
+    color: var(--muted);
+  }
+  .chat .links {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.25rem 1.1rem;
+  }
+  .chat .links a {
+    color: var(--chat-accent);
+    font-weight: 600;
+    text-decoration-color: currentColor;
+  }
+  .chat .typing {
+    display: flex;
+    gap: 5px;
+    padding: 0.9rem 1rem;
+  }
+  .chat .typing span {
+    width: 7px;
+    height: 7px;
+    border-radius: 50%;
+    background: var(--muted);
+    animation: chat-dot 1.1s infinite both;
+  }
+  .chat .typing span:nth-child(2) {
+    animation-delay: 0.18s;
+  }
+  .chat .typing span:nth-child(3) {
+    animation-delay: 0.36s;
+  }
+  .chat .receipt.print {
+    animation: chat-print 1.9s cubic-bezier(0.25, 0.7, 0.2, 1) both;
+  }
+  .chat-foot {
+    border-top: 1px solid var(--rule);
+    padding: 0.9rem 1.1rem 1.1rem;
+    display: flex;
+    flex-direction: column;
+    gap: 0.75rem;
+  }
+  .chat .chips {
+    display: flex;
+    flex-wrap: wrap;
+    gap: 0.5rem;
+    animation: chat-in 0.32s ease-out both;
+  }
+  .chat .chips[hidden] {
+    display: none;
+  }
+  .chat .chip {
+    min-height: 2.5rem;
+    padding: 0.45rem 1rem;
+    border-radius: 999px;
+    border: 1.5px solid var(--chat-accent);
+    background: transparent;
+    color: var(--chat-accent);
+    font: 500 0.875rem var(--sans);
+    cursor: pointer;
+  }
+  .chat .chip[aria-disabled='true'] {
+    opacity: 0.45;
+    cursor: default;
+  }
+  .chat .chip.solid {
+    background: var(--chat-accent);
+    color: var(--card);
+  }
+  .chat .chip:focus-visible,
+  .chat .compose button:focus-visible {
+    outline: 2px solid var(--chat-accent);
+    outline-offset: 2px;
+  }
+  .chat .compose {
+    display: flex;
+    gap: 0.6rem;
+  }
+  .chat .compose input {
+    flex: 1 1 auto;
+    min-width: 0;
+    height: 2.9rem;
+    padding: 0 1.1rem;
+    border-radius: 999px;
+    border: 1px solid var(--rule);
+    background: var(--bg);
+    color: var(--ink);
+    font: 400 0.95rem var(--sans);
+  }
+  .chat .compose input::placeholder {
+    color: var(--faint);
+  }
+  .chat .compose input:focus {
+    outline: 2px solid var(--chat-accent);
+    outline-offset: 1px;
+  }
+  .chat .compose button {
+    flex: none;
+    width: 2.9rem;
+    height: 2.9rem;
+    border-radius: 50%;
+    border: 0;
+    background: var(--you-bg);
+    color: var(--you-ink);
+    display: grid;
+    place-items: center;
+    cursor: pointer;
+  }
+  .chat .compose svg {
+    width: 18px;
+    height: 18px;
+    fill: none;
+    stroke: currentColor;
+    stroke-width: 2;
+    stroke-linecap: round;
+    stroke-linejoin: round;
+  }
+  @keyframes chat-in {
+    from { opacity: 0; transform: translateY(10px) scale(0.98); }
+    to { opacity: 1; transform: none; }
+  }
+  @keyframes chat-dot {
+    0%, 80%, 100% { opacity: 0.25; transform: translateY(0); }
+    40% { opacity: 1; transform: translateY(-3px); }
+  }
+  @keyframes chat-print {
+    from { clip-path: inset(0 0 100% 0); transform: translateY(-16px); }
+    to { clip-path: inset(0 0 0 0); transform: none; }
+  }
+  @media (max-width: 40rem) {
+    .chat .log { padding: 1rem; }
+    .chat .bubble { max-width: 88%; }
+    .chat .bubble.big { font-size: 1.2rem; }
+    /* One swipeable row of chips so the conversation keeps the room */
+    .chat .chips {
+      flex-wrap: nowrap;
+      overflow-x: auto;
+      margin: 0 -1.1rem;
+      padding: 0 1.1rem 0.15rem;
+      scrollbar-width: none;
+    }
+    .chat .chip { flex: none; }
+  }
+</style>

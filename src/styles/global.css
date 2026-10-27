@@ -4,16 +4,22 @@
 @import '@fontsource/ibm-plex-mono/400.css';
 @import '@fontsource/ibm-plex-mono/500.css';
 
-/* Day: Chart Room. Chart paper, navy ink, chart magenta. */
+/* Day: Chart Room. Chart paper, navy ink, slate blue. */
 :root {
   --bg: #e6ece8;
   --ink: #102335;
   --muted: #4d5d68;
   --faint: #5e6b73;
   --rule: #c9d3cf;
-  --accent: #a8155f;
-  --select: #f0c9dc;
+  --accent: #2b5b84;
+  --select: #cfdceb;
   --neat: #9fb0aa;
+  --card: #ffffff;
+  --bubble: #eef2ef;
+  --you-bg: #102335;
+  --you-ink: #ffffff;
+  --chat-accent: #102335;
+  --shadow: 0 1px 2px rgb(16 35 53 / 0.06), 0 18px 40px rgb(16 35 53 / 0.1);
 
   --serif: 'Source Serif 4 Variable', Georgia, serif;
   --sans: 'IBM Plex Sans Variable', system-ui, -apple-system, sans-serif;
@@ -24,7 +30,7 @@
   --label-case: none;
   --label-spacing: 0;
 
-  --measure: 36rem;
+  --measure: 46rem;
   --gutter: clamp(1rem, 5vw, 2rem);
 
   color-scheme: light;
@@ -40,8 +46,13 @@
     --rule: #223241;
     --accent: #d0a956;
     --select: #3a3220;
-  --neat: #4a5d6d;
     --neat: #4a5d6d;
+    --card: #142434;
+    --bubble: #1e3245;
+    --you-bg: #d0a956;
+    --you-ink: #0e1924;
+    --chat-accent: #d0a956;
+    --shadow: 0 24px 50px rgb(0 0 0 / 0.35);
     color-scheme: dark;
   }
 }
@@ -54,7 +65,47 @@
   --accent: #d0a956;
   --select: #3a3220;
   --neat: #4a5d6d;
+  --card: #142434;
+  --bubble: #1e3245;
+  --you-bg: #d0a956;
+  --you-ink: #0e1924;
+  --chat-accent: #d0a956;
+  --shadow: 0 24px 50px rgb(0 0 0 / 0.35);
   color-scheme: dark;
+}
+
+/* Candlelight: what's left after the bulb burns out. Lasts until a reload. */
+:root[data-theme='candle'] {
+  --bg: #140d08;
+  --ink: #f1dcb6;
+  --muted: #c7a882;
+  --faint: #a98b68;
+  --rule: #3a2a1c;
+  --accent: #f0a24a;
+  --select: #4a3018;
+  --card: #1f150e;
+  --bubble: #2c1e14;
+  --you-bg: #e9a24f;
+  --you-ink: #1a110a;
+  --chat-accent: #f0a24a;
+  --shadow: 0 0 60px rgb(240 150 60 / 0.12), 0 24px 50px rgb(0 0 0 / 0.5);
+  color-scheme: dark;
+}
+:root[data-theme='candle'] body::before {
+  content: '';
+  position: fixed;
+  inset: 0;
+  z-index: -1;
+  pointer-events: none;
+  background: radial-gradient(ellipse 70% 60% at 50% 30%, rgb(255 165 70 / 0.16), transparent 70%);
+  animation: candle 2.6s ease-in-out infinite alternate;
+}
+@keyframes candle {
+  0% { opacity: 0.75; transform: translateY(0) scale(1); }
+  30% { opacity: 1; }
+  55% { opacity: 0.82; transform: translateY(-4px) scale(1.02); }
+  80% { opacity: 0.95; }
+  100% { opacity: 0.7; transform: translateY(2px) scale(0.99); }
 }
 
 *,
@@ -128,6 +179,63 @@ a:focus-visible {
   outline: 2px solid var(--accent);
   outline-offset: 3px;
   border-radius: 2px;
+}
+
+/* Content card: About, Projects and the rest sit on one, like the homepage chat */
+/* Every page sits in one window. The chat window has a fixed height; the
+   reading pages grow with their content and the page scrolls. */
+.card {
+  background: var(--card);
+  border-radius: 22px;
+  box-shadow: var(--shadow);
+}
+.card-body {
+  padding: clamp(1.5rem, 6vw, 3.25rem);
+}
+.card-body > .prose,
+.card-body > article,
+.card-body > section {
+  max-width: 38rem;
+}
+
+/* Moving between pages: the header strip holds still, the window resizes and
+   its contents cross-fade. Browsers without cross-page view transitions just
+   load the page. */
+@view-transition {
+  navigation: auto;
+}
+.card-shell {
+  view-transition-name: card;
+}
+::view-transition-group(card) {
+  animation-duration: 0.35s;
+  animation-timing-function: cubic-bezier(0.2, 0.8, 0.2, 1);
+}
+::view-transition-old(card),
+::view-transition-new(card) {
+  height: 100%;
+  object-fit: none;
+  object-position: top;
+}
+@media (prefers-reduced-motion: reduce) {
+  ::view-transition-group(*),
+  ::view-transition-old(*),
+  ::view-transition-new(*) {
+    animation: none !important;
+  }
+}
+
+.sr-only {
+  position: absolute;
+  width: 1px;
+  height: 1px;
+  overflow: hidden;
+  clip: rect(0 0 0 0);
+  white-space: nowrap;
+}
+
+html:not(.js) .js-only {
+  display: none;
 }
 
 /* Skip link: hidden until keyboard focus */
