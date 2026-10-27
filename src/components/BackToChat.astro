@@ -1,0 +1,22 @@
+<p class="to-chat"><a href="/">Back to the chat</a></p>
+
+<style is:global>
+  .to-chat {
+    margin: 2.5rem 0 0;
+  }
+  .to-chat a {
+    display: inline-flex;
+    align-items: center;
+    min-height: 2.75rem;
+    padding: 0 1.25rem;
+    border-radius: 999px;
+    background: var(--you-bg);
+    color: var(--you-ink);
+    font-weight: 600;
+    text-decoration: none;
+  }
+  .to-chat a::before {
+    content: '← ' / '';
+    white-space: pre;
+  }
+</style>

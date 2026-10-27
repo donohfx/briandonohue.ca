@@ -1,16 +1,17 @@
 ---
 import '../styles/global.css';
-import Header from '../components/Header.astro';
+import CardHead from '../components/CardHead.astro';
 import Footer from '../components/Footer.astro';
-import EasterEgg from '../components/EasterEgg.astro';
 import { site } from '../site';
 
 interface Props {
   title?: string;
   description?: string;
+  /** Skip the content card (the homepage chat is its own card). */
+  bare?: boolean;
 }
 
-const { title, description = site.description } = Astro.props;
+const { title, description = site.description, bare = false } = Astro.props;
 const fullTitle = title ? `${title} · ${site.name}` : `${site.name} · ${site.location}`;
 const canonical = new URL(Astro.url.pathname, Astro.site);
 ---
@@ -34,25 +35,42 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <meta property="og:image:height" content="630" />
     <meta name="twitter:card" content="summary_large_image" />
     <script is:inline>
-      // Apply a saved day/night override before first paint. No override = follow the system.
+      // Mark JS as available (the chat hides its no-JS transcript), then apply a
+      // saved day/night override before first paint. No override = follow the system.
+      document.documentElement.classList.add('js');
       (() => {
         try {
           const t = localStorage.getItem('theme');
           if (t === 'light' || t === 'dark') document.documentElement.dataset.theme = t;
+        } catch {}
+        // A burnt-out bulb (five quick clicks on the switch) lasts until a reload.
+        try {
+          const nav = performance.getEntriesByType('navigation')[0];
+          if (nav && nav.type === 'reload') sessionStorage.removeItem('bulb');
+          else if (sessionStorage.getItem('bulb') === 'out') document.documentElement.dataset.theme = 'candle';
         } catch {}
       })();
     </script>
     <meta name="theme-color" content="#e6ece8" media="(prefers-color-scheme: light)" />
     <meta name="theme-color" content="#0e1924" media="(prefers-color-scheme: dark)" />
   </head>
-  <body>
+  <body class:list={{ fit: bare }}>
     <a class="skip" href="#main">Skip to content</a>
-    <Header />
     <main class="wrap" id="main" tabindex="-1">
-      <slot />
+      {
+        bare ? (
+          <slot />
+        ) : (
+          <div class="card page-card card-shell">
+            <CardHead />
+            <div class="card-body">
+              <slot />
+            </div>
+          </div>
+        )
+      }
     </main>
     <Footer />
-    <EasterEgg />
   </body>
 </html>
 
@@ -65,9 +83,24 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
   main:focus {
     outline: none;
   }
+  /* Home: header, chat and footer fit the window, so the page itself never
+     scrolls; only the conversation does. Short windows (or zoomed in) fall back
+     to normal page scrolling. */
+  @media (min-height: 34rem) {
+    body.fit {
+      height: 100dvh;
+    }
+    .fit main {
+      display: flex;
+      flex-direction: column;
+      min-height: 0;
+      padding-top: clamp(1rem, 3vw, 2rem);
+      padding-bottom: 0.75rem;
+    }
+  }
   main {
     flex: 1;
-    padding-top: clamp(2.5rem, 9vw, 5rem);
-    padding-bottom: 5rem;
+    padding-top: clamp(1rem, 3vw, 2rem);
+    padding-bottom: 1.5rem;
   }
 </style>

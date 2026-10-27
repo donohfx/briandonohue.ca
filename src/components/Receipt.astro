@@ -1,0 +1,122 @@
+---
+import { site } from '../site';
+import { receipt } from '../chat';
+
+// A fixed, made-up barcode. Decorative only.
+const bars = [3,1,2,1,1,3,2,1,4,1,1,2,3,1,2,2,1,1,3,1,2,1,4,2,1,1,2,3,1,1,2,1,3,2,1,1,2,4,1,2];
+---
+
+<div class="receipt">
+  <div class="paper">
+    <p class="r-name">{site.name.toUpperCase()}</p>
+    <p class="r-sub">Technology professional · Halifax</p>
+    <div class="r-bar"><span>ORDER #2014–NOW</span><span>PAID</span></div>
+    <ul class="r-items">
+      {
+        receipt.items.map((it) => (
+          <li>
+            <span class="r-line"><b>{it.name}</b><span>{it.year}</span></span>
+            <span class="r-note">{it.note}</span>
+          </li>
+        ))
+      }
+    </ul>
+    <div class="r-totals">
+      {receipt.totals.map((t) => <span class="r-line"><span>{t.label}</span><span>{t.value}</span></span>)}
+    </div>
+    <p class="r-total r-line"><span>TOTAL</span><span>{receipt.total}</span></p>
+    <div class="r-code" aria-hidden="true">
+      {bars.map((w, i) => <span style={`width:${w}px;margin-right:${i % 3 === 0 ? 3 : 2}px`} />)}
+    </div>
+    <p class="r-keep">KEEP THIS RECEIPT</p>
+  </div>
+  <div class="tear" aria-hidden="true"></div>
+</div>
+
+<style is:global>
+  .receipt {
+    width: 100%;
+    max-width: 25rem;
+    filter: drop-shadow(0 10px 18px rgb(0 0 0 / 0.14));
+  }
+  .receipt .paper {
+    background: #fbfaf6;
+    color: #1b1b1b;
+    padding: 1.4rem 1.5rem 1.25rem;
+    font-family: var(--mono);
+    font-size: 0.78rem;
+    line-height: 1.5;
+  }
+  .receipt p {
+    margin: 0;
+  }
+  .receipt .r-name {
+    text-align: center;
+    font-weight: 500;
+    font-size: 0.95rem;
+    letter-spacing: 0.06em;
+  }
+  .receipt .r-sub {
+    text-align: center;
+    margin-bottom: 0.75rem;
+  }
+  .receipt .r-bar,
+  .receipt .r-line {
+    display: flex;
+    justify-content: space-between;
+    gap: 0.75rem;
+  }
+  .receipt .r-bar {
+    border-block: 1px dashed #1b1b1b;
+    padding: 0.35rem 0;
+    margin-bottom: 0.6rem;
+  }
+  .receipt .r-items {
+    list-style: none;
+    margin: 0;
+    padding: 0;
+  }
+  .receipt .r-items li {
+    padding: 0.2rem 0;
+  }
+  .receipt .r-items b {
+    font-weight: 500;
+  }
+  .receipt .r-note {
+    display: block;
+    margin-left: 0.75rem;
+    color: #555;
+  }
+  .receipt .r-totals {
+    border-top: 1px dashed #1b1b1b;
+    margin-top: 0.6rem;
+    padding-top: 0.5rem;
+  }
+  .receipt .r-total {
+    border-block: 2px solid #1b1b1b;
+    margin-top: 0.5rem;
+    padding: 0.35rem 0;
+    font-weight: 500;
+  }
+  .receipt .r-code {
+    display: flex;
+    justify-content: center;
+    height: 2.5rem;
+    margin-top: 0.9rem;
+  }
+  .receipt .r-code span {
+    display: block;
+    background: #1b1b1b;
+  }
+  .receipt .r-keep {
+    margin-top: 0.6rem;
+    text-align: center;
+    font-weight: 500;
+  }
+  .receipt .tear {
+    height: 12px;
+    background:
+      linear-gradient(45deg, transparent 6px, #fbfaf6 0) 0 0 / 12px 12px repeat-x,
+      linear-gradient(-45deg, transparent 6px, #fbfaf6 0) 0 0 / 12px 12px repeat-x;
+  }
+</style>

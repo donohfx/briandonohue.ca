@@ -20,7 +20,7 @@ export const site = {
   now: [
     'Building the future of payments for relationship commerce at Ordergroove.',
     'Making Claude skills for the kind of work that usually eats an afternoon.',
-    'Hardtack is on the hard for the winter, still leaking oil, with a new sail that never got used.',
+    'My boat, Hardtack, is on the hard for the winter, still leaking oil, with a new sail that never got used.',
   ],
   nowUpdated: '2026-10',
 
@@ -56,6 +56,7 @@ export const kindWords = [
 ];
 
 export const nav = [
+  { label: 'Chat', href: '/' },
   { label: 'About', href: '/about/' },
   { label: 'Projects', href: '/projects/' },
 ];

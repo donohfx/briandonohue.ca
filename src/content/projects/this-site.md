@@ -14,4 +14,4 @@ The first version of this site leaned all the way into the boat thing: parchment
 
 It was fun, but it wasn't something I'd send to someone I was about to work with. So I rebuilt it and kept it simple. It's an Astro site now, and adding a project means writing a Markdown file.
 
-The Konami code survived the rebuild. It does a lot less now.
+The Konami code survived the rebuild. Try it in the chat.
