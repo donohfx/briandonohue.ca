@@ -4,7 +4,6 @@ Things to add to the site when there's time. Rough priority order.
 
 ## Needs a decision or content from Brian
 - [ ] Netlify: turn on email notifications for the `chat` form (Forms › chat › Form notifications) after the first deploy.
-- [ ] Rewrite the joke lines in `src/chat.ts` in your own voice (receipt notes and totals, hidden replies, cheat code lines).
 - [ ] Hardtack photo for the project page.
 - [ ] Talks: add Shoptalk 2024 (Customer Innovation panel) and the Everlane interview. Embed the Shopify/Wistia video rather than re-hosting it.
 - [ ] web-video: add the GitHub link once the repo is public.
