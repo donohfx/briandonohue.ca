@@ -3,7 +3,10 @@
 Things to add to the site when there's time. Rough priority order.
 
 ## Needs a decision or content from Brian
-- [ ] Netlify: turn on email notifications for the `chat` form (Forms › chat › Form notifications) after the first deploy.
+- [ ] Google Search Console: add briandonohue.ca, paste the HTML-tag code into `site.verify.google`, deploy, verify, submit `https://briandonohue.ca/sitemap.xml`.
+- [ ] Bing Webmaster Tools: easiest is "Import from Google Search Console" once that's verified (or paste the meta code into `site.verify.bing`). Submit the sitemap.
+- [ ] Plausible: add the site, paste the script src into `site.analytics.plausible`, deploy. Then add goals for the chat events listed in the README.
+- [ ] Once a month: ask ChatGPT, Claude, Perplexity and Gemini "Who is Brian Donohue in Halifax?" and note whether they get it right and link here.
 - [ ] Hardtack photo for the project page.
 - [ ] Talks: add Shoptalk 2024 (Customer Innovation panel) and the Everlane interview. Embed the Shopify/Wistia video rather than re-hosting it.
 - [ ] web-video: add the GitHub link once the repo is public.

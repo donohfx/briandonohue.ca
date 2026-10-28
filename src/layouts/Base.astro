@@ -9,11 +9,48 @@ interface Props {
   description?: string;
   /** Skip the content card (the homepage chat is its own card). */
   bare?: boolean;
+  /** Path of this page's Markdown version, for AI agents. */
+  md?: string;
+  /** Extra schema.org nodes for this page (added to the site-wide graph). */
+  schema?: Record<string, unknown>[];
 }
 
-const { title, description = site.description, bare = false } = Astro.props;
-const fullTitle = title ? `${title} · ${site.name}` : `${site.name} · ${site.location}`;
+const { title, description = site.description, bare = false, md, schema = [] } = Astro.props;
+const fullTitle = title ? `${title} · ${site.name}` : `${site.name} · Technology professional in Halifax`;
 const canonical = new URL(Astro.url.pathname, Astro.site);
+const abs = (p: string) => new URL(p, Astro.site).href;
+
+// Who this site is about, in a form search engines and AI assistants read.
+// sameAs ties this site to the same person's LinkedIn and GitHub.
+const person = {
+  '@type': 'Person',
+  '@id': abs('/#brian'),
+  name: site.name,
+  url: abs('/'),
+  image: abs('/brian.jpg'),
+  description: site.description,
+  jobTitle: site.person.jobTitle,
+  worksFor: { '@type': 'Organization', name: site.person.employer.name, url: site.person.employer.url },
+  address: {
+    '@type': 'PostalAddress',
+    addressLocality: site.person.locality,
+    addressRegion: site.person.region,
+    addressCountry: site.person.country,
+  },
+  knowsAbout: site.person.knowsAbout,
+  ...(site.email ? { email: `mailto:${site.email}` } : {}),
+  sameAs: site.links.map((l) => l.href),
+};
+const website = {
+  '@type': 'WebSite',
+  '@id': abs('/#website'),
+  url: abs('/'),
+  name: site.name,
+  description: site.description,
+  inLanguage: 'en-CA',
+  author: { '@id': person['@id'] },
+};
+const jsonld = JSON.stringify({ '@context': 'https://schema.org', '@graph': [person, website, ...schema] }).replace(/</g, '\\u003c');
 ---
 
 <!doctype html>
@@ -34,6 +71,25 @@ const canonical = new URL(Astro.url.pathname, Astro.site);
     <meta property="og:image:width" content="1200" />
     <meta property="og:image:height" content="630" />
     <meta name="twitter:card" content="summary_large_image" />
+    <meta name="author" content={site.name} />
+    {site.links.map((l) => <link rel="me" href={l.href} />)}
+    {md && <link rel="alternate" type="text/markdown" href={md} title="This page as Markdown" />}
+    <link rel="alternate" type="text/plain" href="/llms.txt" title="llms.txt" />
+    <script type="application/ld+json" set:html={jsonld} />
+    {site.verify.google && <meta name="google-site-verification" content={site.verify.google} />}
+    {site.verify.bing && <meta name="msvalidate.01" content={site.verify.bing} />}
+    {
+      site.analytics.plausible && (
+        <>
+          <script async src={site.analytics.plausible} />
+          <script is:inline>
+            window.plausible = window.plausible || function () { (plausible.q = plausible.q || []).push(arguments); };
+            plausible.init = plausible.init || function (i) { plausible.o = i || {}; };
+            plausible.init();
+          </script>
+        </>
+      )
+    }
     <script is:inline>
       // Mark JS as available (the chat hides its no-JS transcript), then apply a
       // saved day/night override before first paint. No override = follow the system.

@@ -96,6 +96,12 @@ const json = JSON.stringify(data).replace(/</g, '\\u003c');
   const tpl = document.getElementById('receipt-tpl') as HTMLTemplateElement;
 
   const reduce = window.matchMedia('(prefers-reduced-motion: reduce)').matches;
+  // Analytics events (Plausible, if it's switched on in site.ts). Never sends what people type.
+  const track = (name: string, props?: Record<string, string>) => {
+    try {
+      (window as any).plausible?.(name, props ? { props } : undefined);
+    } catch {}
+  };
   const wait = (ms: number) => new Promise((r) => setTimeout(r, reduce ? Math.min(ms, 120) : ms));
 
   let busy = true;
@@ -248,6 +254,7 @@ const json = JSON.stringify(data).replace(/</g, '\\u003c');
   }
 
   function printReceipt() {
+    track('Receipt', { type: 'career' });
     drawReceipt();
     history.push({ k: 'receipt' });
     save();
@@ -323,6 +330,7 @@ const json = JSON.stringify(data).replace(/</g, '\\u003c');
     lock();
     asked.add(t.id);
     said.push(typed || t.q);
+    track('Chat question', { question: t.id, via: typed ? 'typed' : 'button' });
     bubble('you', typed || t.q);
     let extra: (() => void) | undefined;
     if (t.receipt) extra = printReceipt;
@@ -377,6 +385,7 @@ const json = JSON.stringify(data).replace(/</g, '\\u003c');
       return;
     }
     const ok = await send(pending, text);
+    track('Message sent', { ok: String(ok) });
     mode = 'chat';
     pending = '';
     await say([ok ? data.replies.sent.replace('{email}', text) : data.replies.failed.replace('{address}', email)]);
@@ -393,8 +402,9 @@ const json = JSON.stringify(data).replace(/</g, '\\u003c');
     const composing = mode === 'compose';
     mode = 'chat';
     if (new RegExp(data.egg.typed, 'i').test(text)) return cheat(text);
-    const secret = (data.secrets as { match: string; a: string[] }[]).find((s) => new RegExp(s.match, 'i').test(text));
+    const secret = (data.secrets as { id: string; match: string; a: string[] }[]).find((s) => new RegExp(s.match, 'i').test(text));
     if (secret) {
+      track('Hidden reply', { reply: secret.id });
       lock();
       said.push(text);
       bubble('you', text);
@@ -429,6 +439,7 @@ const json = JSON.stringify(data).replace(/</g, '\\u003c');
       unlock();
       return;
     }
+    track('Unmatched message');
     lock();
     said.push(text);
     pending = text;
@@ -484,6 +495,7 @@ const json = JSON.stringify(data).replace(/</g, '\\u003c');
     paper.append(code, el('p', 'r-keep', data.egg.footer));
     wrap.append(paper, el('div', 'tear'));
     wrap.querySelector('.tear')!.setAttribute('aria-hidden', 'true');
+    track('Receipt', { type: 'visitor' });
     drawHtml(wrap.outerHTML);
     history.push({ k: 'html', html: wrap.outerHTML });
     save();

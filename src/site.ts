@@ -24,6 +24,35 @@ export const site = {
   ],
   nowUpdated: '2026-10',
 
+  // Facts for search engines and AI assistants (structured data, llms.txt).
+  // Keep these in step with About.
+  person: {
+    jobTitle: 'Principal Product Manager',
+    employer: { name: 'Ordergroove', url: 'https://www.ordergroove.com' },
+    locality: 'Halifax',
+    region: 'NS',
+    country: 'CA',
+    knowsAbout: [
+      'Payments',
+      'Digital wallets',
+      'Sales tax',
+      'Subscriptions',
+      'Relationship commerce',
+      'Agentic commerce',
+      'Checkout',
+      'Product management',
+    ],
+  },
+
+  // Paste these in once the accounts exist. Empty means off.
+  verify: {
+    google: '', // Search Console › Settings › Ownership verification › HTML tag: the content="..." value
+    bing: '', // Bing Webmaster Tools › meta tag: the content="..." value
+  },
+  analytics: {
+    // Plausible: the script src from Site settings › Site installation, e.g. https://plausible.io/js/pa-XXXX.js
+    plausible: '',
+  },
 };
 
 // Excerpts from LinkedIn recommendations. Keep them verbatim.

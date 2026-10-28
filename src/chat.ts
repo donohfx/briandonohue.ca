@@ -104,12 +104,12 @@ export const receipt = {
 
 // Hidden replies: typed messages that match one of these get an answer in
 // character instead of the "send it to me" offer. Checked before the topics.
-export const secrets: { match: string; a: string[] }[] = [
-  { match: 'refund', a: ['All sales final. I owned tax, not refunds.'] },
-  { match: 'charge ?back|dispute', a: ['Disputing a free conversation is bold.', 'Filed with my bank. Expect a reply in 60 to 90 business days.'] },
-  { match: 'discount|coupon|promo', a: ['Try COFFEECHAT at checkout.', 'There is no checkout.'] },
-  { match: '\\btip\\b|tipping', a: ['A tipping screen on a personal website? Not on my watch.'] },
-  { match: 'are you (a )?(bot|ai|real)|is this (a )?(bot|ai)|chatgpt|claude', a: ['I’m a website. The real me reads every message you send from here, though.'] },
+export const secrets: { id: string; match: string; a: string[] }[] = [
+  { id: 'refund', match: 'refund', a: ['All sales final. I owned tax, not refunds.'] },
+  { id: 'chargeback', match: 'charge ?back|dispute', a: ['Disputing a free conversation is bold.', 'Filed with my bank. Expect a reply in 60 to 90 business days.'] },
+  { id: 'discount', match: 'discount|coupon|promo', a: ['Try COFFEECHAT at checkout.', 'There is no checkout.'] },
+  { id: 'tip', match: '\\btip\\b|tipping', a: ['A tipping screen on a personal website? Not on my watch.'] },
+  { id: 'bot', match: 'are you (a )?(bot|ai|real)|is this (a )?(bot|ai)|chatgpt|claude', a: ['I’m a website. The real me reads every message you send from here, though.'] },
 ];
 
 // The cheat code. ↑↑↓↓←→←→BA on a keyboard, or type one of these in the chat.

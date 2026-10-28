@@ -10,9 +10,30 @@ export async function getStaticPaths() {
 
 const { project } = Astro.props;
 const { Content } = await render(project);
+const abs = (p: string) => new URL(p, Astro.site).href;
+const url = abs(`/projects/${project.id}/`);
+const schema = [
+  {
+    '@type': 'CreativeWork',
+    '@id': `${url}#work`,
+    url,
+    name: project.data.title,
+    description: project.data.summary,
+    author: { '@id': abs('/#brian') },
+    ...(project.data.link ? { sameAs: project.data.link } : {}),
+  },
+  {
+    '@type': 'BreadcrumbList',
+    itemListElement: [
+      { '@type': 'ListItem', position: 1, name: 'Brian Donohue', item: abs('/') },
+      { '@type': 'ListItem', position: 2, name: 'Projects', item: abs('/projects/') },
+      { '@type': 'ListItem', position: 3, name: project.data.title, item: url },
+    ],
+  },
+];
 ---
 
-<Base title={project.data.title} description={project.data.summary}>
+<Base title={project.data.title} description={project.data.summary} md={`/projects/${project.id}.md`} schema={schema}>
   <article>
     <p class="back"><a href="/projects/">Projects</a></p>
     <h1>

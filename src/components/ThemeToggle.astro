@@ -82,6 +82,7 @@
       fx.remove();
     }
     window.dispatchEvent(new Event('bulbout'));
+    try { (window as any).plausible?.('Bulb burnt out'); } catch {}
   }
 
   let clicks: number[] = [];
