@@ -15,16 +15,32 @@ const isCurrent = (href: string) => (href === '/' ? path === '/' : path.startsWi
 ---
 
 <div class="card-head">
-  <a class="id" href="/" aria-label={`${site.name}, back to the chat`}>
-    <span class="avatar">
-      <img src="/brian.jpg" alt="" width="44" height="44" />
-      <span class="online" aria-hidden="true"></span>
-    </span>
-    <span class="names" aria-hidden="true">
-      <span class="who">{site.name}</span>
-      <span class="sub" data-sub={live ? '' : undefined}>Usually replies within a day</span>
-    </span>
-  </a>
+  {
+    live ? (
+      // The chat page: the name is the page's main heading, visible to people and search engines.
+      <div class="id">
+        <span class="avatar">
+          <img src="/brian.jpg" alt="" width="44" height="44" />
+          <span class="online" aria-hidden="true" />
+        </span>
+        <span class="names">
+          <h1 class="who">{site.name}</h1>
+          <span class="sub" data-sub>Usually replies within a day</span>
+        </span>
+      </div>
+    ) : (
+      <a class="id" href="/" aria-label={`${site.name}, back to the chat`}>
+        <span class="avatar">
+          <img src="/brian.jpg" alt="" width="44" height="44" />
+          <span class="online" aria-hidden="true" />
+        </span>
+        <span class="names" aria-hidden="true">
+          <span class="who">{site.name}</span>
+          <span class="sub">Usually replies within a day</span>
+        </span>
+      </a>
+    )
+  }
   <nav aria-label="Main">
     {
       nav.map((item) => (
@@ -86,7 +102,11 @@ const isCurrent = (href: string) => (href === '/' ? path === '/' : path.startsWi
     flex-direction: column;
   }
   .card-head .who {
+    margin: 0;
+    font-family: var(--sans);
+    font-size: 1rem;
     font-weight: 600;
+    letter-spacing: 0;
     line-height: 1.3;
   }
   .card-head .sub {

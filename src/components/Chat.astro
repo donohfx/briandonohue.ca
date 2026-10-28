@@ -4,7 +4,7 @@
 // script below clears that and plays it as a chat.
 import { site, kindWords } from '../site';
 import CardHead from './CardHead.astro';
-import { opener, topics as baseTopics, replies, secrets, egg, bulbOut } from '../chat';
+import { opener, topics as baseTopics, replies, secrets, egg, bulbOut, receipt } from '../chat';
 import Receipt from './Receipt.astro';
 
 const featured = kindWords.find((k) => k.featured)!;
@@ -64,6 +64,55 @@ const json = JSON.stringify(data).replace(/</g, '\\u003c');
     </form>
   </div>
 </section>
+
+<!--
+  The whole conversation as plain text. Search engines index the page after its
+  script runs, when the chat only shows the opener, so the answers live here too.
+  Also for anyone who'd rather read than click. (Without JavaScript the chat
+  window already shows all of it, so this is hidden then.)
+-->
+<details class="transcript js-only">
+  <summary>Read the whole conversation</summary>
+  <div class="transcript-body">
+    <h2>{site.name}, in his own words</h2>
+    <p class="lede">{opener.a}</p>
+    {
+      topics.map((t) => (
+        <section>
+          <h3>{t.q}</h3>
+          {(t.contact ? (t.noJs ?? t.a) : t.a).map((line) => (
+            <p>{line}</p>
+          ))}
+          {t.receipt && (
+            <ul>
+              {receipt.items.map((it) => (
+                <li>
+                  <strong>{it.name}</strong> ({it.year}). {it.note}
+                </li>
+              ))}
+            </ul>
+          )}
+          {t.quote && (
+            <blockquote>
+              <p>{data.quote.text}</p>
+              <footer>{data.quote.cite}</footer>
+            </blockquote>
+          )}
+          {t.links && <p>{t.links.map((l) => <a href={l.href}>{l.label}</a>)}</p>}
+          {t.contact && (
+            <p class="t-links">
+              {site.links.map((l) => (
+                <a href={l.href} rel="me noopener">
+                  {l.label}
+                </a>
+              ))}
+            </p>
+          )}
+        </section>
+      ))
+    }
+  </div>
+</details>
 
 <template id="receipt-tpl"><Receipt /></template>
 
@@ -759,6 +808,79 @@ const json = JSON.stringify(data).replace(/</g, '\\u003c');
     stroke-width: 2;
     stroke-linecap: round;
     stroke-linejoin: round;
+  }
+  /* With the conversation opened, the page scrolls normally and the chat keeps its size. */
+  body.fit:has(.transcript[open]) {
+    height: auto;
+  }
+  .fit:has(.transcript[open]) .chat {
+    flex: none;
+    height: calc(100dvh - 6rem);
+  }
+  .transcript {
+    margin-top: 0.6rem;
+    text-align: center;
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .transcript summary {
+    display: inline-block;
+    padding: 0.35rem 0.5rem;
+    cursor: pointer;
+    text-decoration: underline;
+    text-decoration-color: color-mix(in srgb, var(--muted) 40%, transparent);
+    text-underline-offset: 0.2em;
+    list-style: none;
+  }
+  .transcript summary::-webkit-details-marker {
+    display: none;
+  }
+  .transcript summary:focus-visible {
+    outline: 2px solid var(--chat-accent);
+    outline-offset: 2px;
+    border-radius: 4px;
+  }
+  .transcript-body {
+    margin: 0.75rem 0 1rem;
+    padding: clamp(1.25rem, 5vw, 2.5rem);
+    background: var(--card);
+    border-radius: 22px;
+    box-shadow: var(--shadow);
+    color: var(--ink);
+    text-align: left;
+    font-size: 1rem;
+  }
+  .transcript-body h2 {
+    font-size: 1.5rem;
+    margin-bottom: 1rem;
+  }
+  .transcript-body h3 {
+    font-size: 1.15rem;
+    margin: 1.75rem 0 0.5rem;
+  }
+  .transcript-body .lede {
+    font-family: var(--serif);
+    font-size: 1.2rem;
+  }
+  .transcript-body p {
+    margin: 0 0 0.6rem;
+  }
+  .transcript-body ul {
+    margin: 0;
+    padding-left: 1.2rem;
+  }
+  .transcript-body blockquote {
+    margin: 0.5rem 0;
+    padding-left: 1rem;
+    border-left: 2px solid var(--chat-accent);
+  }
+  .transcript-body blockquote footer {
+    font-size: 0.85rem;
+    color: var(--muted);
+  }
+  .transcript-body .t-links {
+    display: flex;
+    gap: 1rem;
   }
   @keyframes chat-in {
     from { opacity: 0; transform: translateY(10px) scale(0.98); }

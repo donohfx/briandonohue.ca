@@ -11,6 +11,14 @@ Things to add to the site when there's time. Rough priority order.
 - [ ] Talks: add Shoptalk 2024 (Customer Innovation panel) and the Everlane interview. Embed the Shopify/Wistia video rather than re-hosting it.
 - [ ] web-video: add the GitHub link once the repo is public.
 
+## Rank first for "Brian Donohue"
+- [ ] Dartmouth Yacht Club site footer: "Website by Brian Donohue" linking to https://briandonohue.ca
+- [ ] Website field on LinkedIn, GitHub, and any X / Bluesky / Threads / Substack / Crunchbase profiles → briandonohue.ca, with the same one-line description
+- [ ] Ordergroove: a team, author or blog page that links to briandonohue.ca
+- [ ] Ask Shoptalk (2024 panel), the Everlane interview, podcasts and Halifax tech groups to link your name to the site
+- [ ] Publish the first post (support to product, or what tax taught me)
+- [ ] Search Console › Performance: watch the position for "Brian Donohue", by country
+
 ## Keep fresh
 - [ ] Update the Now list and `nowUpdated` in `src/site.ts` every few months (next: early 2027). It's also the chat's "What's on your plate now?" answer.
 - [ ] Update the receipt in `src/chat.ts` when the job changes.
