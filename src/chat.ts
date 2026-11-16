@@ -92,7 +92,7 @@ export const receipt = {
     { name: 'Product Manager, Tax', year: '2017', note: 'Calculation engine, reporting, Avalara.' },
     { name: 'Senior PM, Shop Pay', year: '2022', note: 'Off Shopify for the first time, with Everlane.' },
     { name: 'Product Lead, Shop + Shop Pay', year: '2024', note: 'Payments, identity, agentic commerce.' },
-    { name: 'Staff PM, Paramount', year: '2026', note: 'Not my favourite stretch.' },
+    { name: 'Staff PM, Paramount', year: '2026', note: 'Merchant hierarchy, legacy payments.' },
     { name: 'Principal PM, Ordergroove', year: 'NOW', note: 'Payments for relationship commerce.' },
   ],
   totals: [

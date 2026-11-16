@@ -27,7 +27,7 @@ export const about = {
       org: 'Paramount Commerce',
       when: '2026',
       role: 'Staff Product Manager',
-      note: 'Built a merchant hierarchy for a legacy payments platform. Not my favourite stretch.',
+      note: 'Built a merchant hierarchy for a legacy payments platform.',
     },
     { org: 'Shopify', when: '2014 to 2025', role: '', note: 'Eleven years, from merchant support to product leadership.' },
     {
