@@ -90,6 +90,17 @@ const jsonld = JSON.stringify({ '@context': 'https://schema.org', '@graph': [per
         </>
       )
     }
+    {
+      site.analytics.goatcounter && (
+        <>
+          {/* One GoatCounter site covers several hostnames, so each path says which. */}
+          <script is:inline>
+            window.goatcounter = { path: (p) => location.host.replace(/^www\./, '') + p };
+          </script>
+          <script is:inline data-goatcounter={site.analytics.goatcounter} async src="https://gc.zgo.at/count.js" />
+        </>
+      )
+    }
     <script is:inline>
       // Mark JS as available (the chat hides its no-JS transcript), then apply a
       // saved day/night override before first paint. No override = follow the system.

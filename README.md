@@ -37,6 +37,10 @@ npm run preview  # serve the build
 - `public/robots.txt` welcomes all crawlers, AI search and training bots included.
 - Search Console / Bing verification and Plausible analytics switch on by filling in `site.verify` and `site.analytics` in `src/site.ts`.
 
+## Visit counts
+
+GoatCounter (no cookies) counts page views, set by `site.analytics.goatcounter`. harbour.briandonohue.ca uses the same code, so paths are recorded with the hostname in front. The chat events below go to Plausible only.
+
 ## Analytics events
 
 With Plausible on, the chat sends: `Chat question` (which one, button or typed), `Receipt` (career or visitor), `Hidden reply` (which one), `Unmatched message`, `Message sent` (ok or not), and `Bulb burnt out`. Nothing anyone types is sent.

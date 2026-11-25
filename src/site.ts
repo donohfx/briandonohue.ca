@@ -52,6 +52,8 @@ export const site = {
   analytics: {
     // Plausible: the script src from Site settings › Site installation, e.g. https://plausible.io/js/pa-XXXX.js
     plausible: '',
+    // GoatCounter: the count URL, shared with harbour.briandonohue.ca (paths include the hostname).
+    goatcounter: 'https://briandonohue.goatcounter.com/count',
   },
 };
 
